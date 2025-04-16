@@ -2,12 +2,11 @@
 using namespace std;
 //Usa BFS
 //Necessario fonte e sumidouro
-
+int rgrafo[][]; // alterar BFS para usar grafo residual.
 int fluxoMaximo(int ini, int fim, int tam){
     int u, v;
     int fluxo = 0;
     int bot;
-    int rgrafo[tam][tam];
     for(u = 0; u < tam; u++)
         for(v = 0; v < tam; v++) rgrafo[u][v]=mat[u][v];
     

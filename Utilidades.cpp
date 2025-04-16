@@ -12,3 +12,6 @@ make_tuple(1, 2, 3);
 
 // Pegar elemento i da tupla
 get<i>(t);
+
+// infinito
+#define INF 0x3F3F3F3F
