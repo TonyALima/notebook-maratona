@@ -1,5 +1,33 @@
 # Notebook de Maratona
 
+## Levenshtein
+
+```cpp
+
+// numero minimo de operacoes para transformar uma string em outra.
+int levenshtein(const string& a, const string& b) {
+    int m = a.size(), n = b.size();
+    vector<vector<int>> dp(m+1, vector<int>(n+1));
+
+    // Inicializa bordas
+    for (int i = 0; i <= m; ++i) dp[i][0] = i;
+    for (int j = 0; j <= n; ++j) dp[0][j] = j;
+
+    // Preenche a matriz
+    for (int i = 1; i <= m; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            int cost = (a[i-1] == b[j-1]) ? 0 : 1;
+            dp[i][j] = min({
+                dp[i-1][j] + 1,     // deletar
+                dp[i][j-1] + 1,     // inserir
+                dp[i-1][j-1] + cost // substituir
+            });
+        }
+    }
+
+    return dp[m][n];
+}```
+
 ## Tarjan
 
 ```cpp
@@ -44,12 +72,11 @@ void tarjan(int n){
 ```cpp
 //Usa BFS
 //Necessario fonte e sumidouro
-
+int rgrafo[][]; // alterar BFS para usar grafo residual.
 int fluxoMaximo(int ini, int fim, int tam){
     int u, v;
     int fluxo = 0;
     int bot;
-    int rgrafo[tam][tam];
     for(u = 0; u < tam; u++)
         for(v = 0; v < tam; v++) rgrafo[u][v]=mat[u][v];
     
@@ -72,7 +99,6 @@ int fluxoMaximo(int ini, int fim, int tam){
 ## BFS
 
 ```cpp
-#define INF 0x3F3F3F3F
 
 int mat[][];
 int vis[], anterior[];
@@ -85,13 +111,91 @@ int BFS(int ini, int fim, int tam){ // 1 se tiver caminho, 0 caso nao
     while (!fila.empty()){
         for (i = 0; i < tam; i++){
             if (!vis[i] && mat[fila.front()][i]){
-                if (i == fim) anterior[i] = fila.front(); return 1;
+                if (i == fim) {anterior[i] = fila.front(); return 1;}
                 fila.push(i); anterior[i] = fila.front(); vis[i] = 1;
             }
         }
         fila.pop();
     }
     return 0;
+}
+```
+
+## Crivo-de-Eratostenes
+
+```cpp
+// Cria um vetor de fatores primos / todos os primos ate N
+
+int fprimos[]; // inicializa com 0
+
+void crivo(int n){
+    fprimos[0] = fprimos[1] = 1;
+    for(int i = 2; i < n; i++){
+        if(fprimos[i] == 0){
+            fprimos[i] = i;
+        }
+        if (i * i < n){
+            for (int j = i*i; j < n; j+=i){
+                fprimos[j] = i;
+            }
+        }
+    }
+}
+```
+
+## Dijkstra
+
+```cpp
+// Menor caminho
+
+typedef pair<int, int> ii;
+typedef vector<ii> vii;
+typedef vector<int> vi;
+
+vii adj[];
+vi custo(SIZE, INF);
+
+void dijkstra(int s){
+    custo[s] = 0;
+    priority_queue<ii, vii, greater<ii>> heap;
+    heap.push(ii(0, s));
+    while(!heap.empty()){
+        ii menor = heap.top(); heap.pop();
+        int d = menor.first, u = menor.second;
+        if (d > custo[u]) continue;
+        for (int i = 0; i < adj[u].size(); i++){
+            ii v = adj[u][i];
+            if(custo[u]+v.second < custo[v.first]){
+                custo[v.first] = custo[u] + v.second;
+                heap.push(ii(custo[v.first], v.first));
+            }
+        }
+    }
+}
+```
+
+## Bellman-Ford
+
+```cpp
+// Caminho minimo com aresta negativa, caminho percorrido
+
+int m[][], custo[], anterior[];
+
+void bellmanFord(int s, int n){
+    int i, j, k;
+    for (i = 0; i < n; i++){
+        custo[i] = INF;
+        anterior[i] = -1;
+    }
+    custo[s] = 0;
+
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            for (k = 0; k < n; k++)
+                if (k != j && m[j][k] != 0 && custo[k] > custo[j]+m[j][k]){
+                    custo[k] = custo[j]+m[j][k];
+                    anterior[k] = j;
+                }
 }
 ```
 
@@ -211,6 +315,66 @@ int DFS(int v, int tam){
 }
 ```
 
+## Floiyd-Warshall
+
+```cpp
+// Deteccao de ciclo negativo e caminho minimo para qualquer u, v
+
+int m[][], custo[][];
+
+bool floydWarshall(int n){
+    int i, j, k;
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            custo[i][j] = m[i][j];
+
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++){
+            for (k = 0; k < n; k++){
+                if (custo[i][k] != INF && custo[k][j] != INF &&
+                    custo[i][j] > custo[i][k] + custo[k][j])
+                    custo[i][j] = custo[i][k] + custo[k][j];
+            }
+            if (custo[j][j]< 0)
+                return true;
+        }
+    return false;
+}
+```
+
+## KnapSack
+
+```cpp
+// Encher a mochila com maior valor
+
+pair<int, int> vet[]; // peso, valor
+
+// sem repeticao
+int knapSack(int W, int n){
+    int memo[W+1];
+    memset(memo, 0, sizeof(memo));
+    for (int i = 0; i < n; i++){
+        for (int w = W; w >=vet[i].first; w--){
+            memo[w] = max(memo[w], memo[w-vet[i].first] + vet[i].second);
+        }
+    }
+    return memo[W];
+}
+
+// com repeticao
+int knapSack(int W, int n){
+    int memo[W+1];
+    memset(memo, 0, sizeof(memo));
+    for (int w = 0; w < W; w++){
+        for (int i = 0; i < n; i++){
+            if (vet[i].first <= w)
+                memo[w] = max(memo[w], memo[w-vet[i].first] + vet[i].second);
+        }
+    }
+    return memo[W];
+}
+```
+
 ## Fenwick
 
 ```cpp
@@ -298,4 +462,7 @@ make_tuple(1, 2, 3);
 
 // Pegar elemento i da tupla
 get<i>(t);
+
+// infinito
+#define INF 0x3F3F3F3F
 ```
