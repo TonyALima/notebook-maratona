@@ -26,7 +26,9 @@ int levenshtein(const string& a, const string& b) {
     }
 
     return dp[m][n];
-}```
+}
+```
+<div style="page-break-after: always;"></div>
 
 ## Tarjan
 
@@ -66,6 +68,7 @@ void tarjan(int n){
     for(int i = 0; i < n; i++) if (dis[i] == -1) DFS(i);
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Edmonds-Karp
 
@@ -95,6 +98,7 @@ int fluxoMaximo(int ini, int fim, int tam){
     return fluxo;
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## BFS
 
@@ -120,6 +124,7 @@ int BFS(int ini, int fim, int tam){ // 1 se tiver caminho, 0 caso nao
     return 0;
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Crivo-de-Eratostenes
 
@@ -142,6 +147,7 @@ void crivo(int n){
     }
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Dijkstra
 
@@ -173,6 +179,7 @@ void dijkstra(int s){
     }
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Bellman-Ford
 
@@ -198,6 +205,7 @@ void bellmanFord(int s, int n){
                 }
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Kruskall
 
@@ -235,6 +243,7 @@ int kruskall(int tam){
     return res;
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Interseccao
 
@@ -256,6 +265,7 @@ bool doIntersect(Ponto p1, Ponto p2, Ponto p3, Ponto p4) {
     return (d1 * d2 < 0) && (d3 * d4 < 0);
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Gauss
 
@@ -290,6 +300,7 @@ void solve(int n){
     }
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## DFS
 
@@ -314,6 +325,7 @@ int DFS(int v, int tam){
     return 0;
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Floiyd-Warshall
 
@@ -341,6 +353,7 @@ bool floydWarshall(int n){
     return false;
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## KnapSack
 
@@ -374,6 +387,7 @@ int knapSack(int W, int n){
     return memo[W];
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Fenwick
 
@@ -405,6 +419,7 @@ int queryBIT(int index){
     return soma;
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Segment-Tree
 
@@ -446,6 +461,7 @@ int update(tree *arv, int i, int valor){
     return arv->valor;
 }
 ```
+<div style="page-break-after: always;"></div>
 
 ## Utilidades
 
@@ -466,3 +482,4 @@ get<i>(t);
 // infinito
 #define INF 0x3F3F3F3F
 ```
+<div style="page-break-after: always;"></div>
