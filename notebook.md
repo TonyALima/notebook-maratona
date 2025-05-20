@@ -74,6 +74,135 @@ void tarjan(int n){
 
 <div style="page-break-after: always;"></div>
 
+## trie
+
+```cpp
+
+const int K = 26;
+struct Vertex {
+    int next[K];
+    int output = 0;
+    bool eliminado = false;
+    Vertex() {
+        fill(begin(next), end(next), -1);
+    }
+};
+vector<Vertex> trie(1);
+
+int add_string(string const& s) {
+    int v = 0;
+    for (char ch : s) {
+        int c = ch - 'a';
+        if(trie[v].eliminado) return 0;
+        if (trie[v].next[c] == -1) {
+            trie[v].next[c] = trie.size();
+            trie.emplace_back();
+        }
+        v = trie[v].next[c];
+    }
+    if(trie[v].eliminado) return 0;
+    trie[v].output++;
+    return 1;
+}
+
+int conta_out(int v){
+    int res=0;
+    if(trie[v].eliminado) return 0;
+    for(int i=0;i<K;i++){
+        if(trie[v].next[i]!=-1){
+            res+=conta_out(trie[v].next[i]);
+        }
+    }
+    res+=trie[v].output;
+    return res;
+}
+
+int remove_string(string const& s){
+    int v = 0;
+    for (char ch : s) {
+        int c = ch - 'a';
+        if(trie[v].eliminado) return 0;
+        if (trie[v].next[c] == -1) {
+            trie[v].next[c] = trie.size();
+            trie.emplace_back();
+        }
+        v = trie[v].next[c];
+    }
+    int res=conta_out(v);
+    trie[v].eliminado = true;
+    return res;
+}
+
+
+int main(){
+    int n,res=0;
+    cin>>n;
+    while(n--){
+        int tipo;
+        string s;
+        cin>>tipo;
+        cin>>s;
+        if(tipo==2) res+=add_string(s);
+        else res-=remove_string(s);
+        cout<<res<<endl;
+    }
+    return 0;
+}
+```
+
+<div style="page-break-after: always;"></div>
+
+## crammer
+
+```cpp
+//O(n^4)
+
+double A[20][20],b[20],X[20];
+double det(int n){//Calcula o determinante sem compremeter a matriz O(n^3)
+    double mat[n][n],res=1;
+    int mxI;
+    for(int i=0;i<n;i++)
+        for(int j=0;j<n;j++) mat[i][j]=A[i][j];
+    for(int i=0;i<n;i++){
+        mxI=i;
+        for(int j=i+1;j<n;j++){
+            if(mat[j][i]>mat[mxI][i]) mxI=j;
+        }
+        if(mxI!=i){
+            for(int j=0;j<n;j++){
+                double aux=mat[mxI][j];
+                mat[mxI][j]=mat[i][j];
+                mat[i][j]=aux;
+            }
+            res=-res;
+        }
+        if(abs(mat[i][i])<1e-12) return NAN;
+        for(int j=i+1;j<n;j++){
+            double F=-mat[j][i]/mat[i][i];
+            for(int k=0;k<n;k++) mat[j][k]+=F*mat[i][k];
+        }
+    }
+    for(int i=0;i<n;i++) res*=mat[i][i];
+    return res;
+}
+
+void solver(int n){
+    double d=det(n);
+    double aux[n];
+    //if(abs(d)<1e-12) return;//determinante = 0
+    for(int i=0;i<n;i++){
+        for(int j=0;j<n;j++){
+            aux[j]=A[j][i];
+            A[j][i]=b[j];
+        }
+        X[i]=det(n)/d;
+        for(int j=0;j<n;j++) A[j][i]=aux[j];
+    }
+}
+```
+
+<div style="page-break-after: always;"></div>
+
 ## Edmonds-Karp
 
 ```cpp
@@ -159,6 +288,77 @@ void crivo(int n){
 
 <div style="page-break-after: always;"></div>
 
+## fft
+
+```cpp
+using cd = complex<double>;
+const double PI = acos(-1);
+
+void fft(vector<cd> & a, bool invert) {//Usado para multiplicar polinomios e numeros mt grandes O(nlogn)
+    int n = a.size();
+
+    for (int i = 1, j = 0; i < n; i++) {
+        int bit = n >> 1;
+        for (; j & bit; bit >>= 1)
+            j ^= bit;
+        j ^= bit;
+
+        if (i < j)
+            swap(a[i], a[j]);
+    }
+
+    for (int len = 2; len <= n; len <<= 1) {
+        double ang = 2 * PI / len * (invert ? -1 : 1);
+        cd wlen(cos(ang), sin(ang));
+        for (int i = 0; i < n; i += len) {
+            cd w(1);
+            for (int j = 0; j < len / 2; j++) {
+                cd u = a[i+j], v = a[i+j+len/2] * w;
+                a[i+j] = u + v;
+                a[i+j+len/2] = u - v;
+                w *= wlen;
+            }
+        }
+    }
+
+    if (invert) {
+        for (cd & x : a)
+            x /= n;
+    }
+}
+
+vector<int> multiply(vector<int> const& a, vector<int> const& b) {
+    vector<cd> fa(a.begin(), a.end()), fb(b.begin(), b.end());
+    int n = 1;
+    while (n < a.size() + b.size()) 
+        n <<= 1;
+    fa.resize(n);
+    fb.resize(n);
+
+    fft(fa, false);
+    fft(fb, false);
+    for (int i = 0; i < n; i++)
+        fa[i] *= fb[i];
+    fft(fa, true);
+
+    vector<int> result(n);
+    for (int i = 0; i < n; i++)
+        result[i] = round(fa[i].real());
+    return result;
+}
+
+/*
+int carry = 0;
+    for (int i = 0; i < n; i++)
+        result[i] += carry;
+        carry = result[i] / 10;
+        result[i] %= 10;
+    }
+*/
+```
+
+<div style="page-break-after: always;"></div>
+
 ## Dijkstra
 
 ```cpp
@@ -217,6 +417,26 @@ void bellmanFord(int s, int n){
                 }
 }
 
+```
+
+<div style="page-break-after: always;"></div>
+
+## fastpow
+
+```cpp
+
+long long fast_power(long long base, long long power) {
+    long long result = 1;
+    while(power > 0) {
+
+        if(power % 2 == 1) { // Can also use (power & 1) to make code even faster
+            result = (result*base) ;
+        }
+        base = (base * base);
+        power = power / 2; // Can also use power >>= 1; to make code even faster
+    }
+    return result;
+}
 ```
 
 <div style="page-break-after: always;"></div>
@@ -349,6 +569,37 @@ int DFS(int v, int tam){
 
 <div style="page-break-after: always;"></div>
 
+## crt
+
+```cpp
+struct Congruence {
+    long long a, m;
+};
+//Calcular Chinese Remainder Theorem, usa inverso modular
+long long mod_inv(long long a, long long m) {
+    if (a <= 1) return a;
+    return m - (mod_inv(m % a, a) * (m / a) % m);
+}
+
+long long chinese_remainder_theorem(vector<Congruence> const& congruences) {
+    long long M = 1;
+    for (auto const& congruence : congruences) {
+        M *= congruence.m;
+    }
+
+    long long solution = 0;
+    for (auto const& congruence : congruences) {
+        long long a_i = congruence.a;
+        long long M_i = M / congruence.m;
+        long long N_i = mod_inv(M_i, congruence.m);
+        solution = (solution + a_i * M_i % M * N_i) % M;
+    }
+    return solution;
+}
+```
+
+<div style="page-break-after: always;"></div>
+
 ## Floiyd-Warshall
 
 ```cpp
@@ -384,19 +635,7 @@ bool floydWarshall(int n){
 ```cpp
 // Encher a mochila com maior valor
 
-pair<int, int> vet[]; // peso, valor
-
-// sem repeticao
-int knapSack(int W, int n){
-    int memo[W+1];
-    memset(memo, 0, sizeof(memo));
-    for (int i = 0; i < n; i++){
-        for (int w = W; w >=vet[i].first; w--){
-            memo[w] = max(memo[w], memo[w-vet[i].first] + vet[i].second);
-        }
-    }
-    return memo[W];
-}
+int peso[], valor[];
 
 // com repeticao
 int knapSack(int W, int n){
@@ -404,13 +643,54 @@ int knapSack(int W, int n){
     memset(memo, 0, sizeof(memo));
     for (int w = 0; w < W; w++){
         for (int i = 0; i < n; i++){
-            if (vet[i].first <= w)
-                memo[w] = max(memo[w], memo[w-vet[i].first] + vet[i].second);
+            if (peso[i] <= w)
+                memo[w] = max(memo[w], memo[w-peso[i]] + valor[i]);
         }
     }
     return memo[W];
 }
 
+// sem repeticao
+int knapSack(int W, int n){
+    int memo[W+1];
+    memset(memo, 0, sizeof(memo));
+    for (int i = 0; i < n; i++){
+        for (int w = W; w >=peso[i]; w--){
+            memo[w] = max(memo[w], memo[w-peso[i]] + valor[i]);
+        }
+    }
+    return memo[W];
+}
+
+// versao com matriz.
+
+int mat[][];
+
+int knapSack(int W, int n) {
+    for (int i = 1; i <= n; ++i) {
+        for (int w = 0; w <= W; ++w) {
+            if (peso[i-1] <= w) {
+                mat[i][w] = max(mat[i-1][w], mat[i-1][w - peso[i-1]] + valor[i-1]);
+            } else {
+                mat[i][w] = mat[i-1][w];
+            }
+        }
+    }
+    return mat[n][W];
+}
+
+vector<int> escolhidos(int W, int n){
+    int w = W;
+    vector<int> itens = vector<int>();
+    while(n > 0 && w > 0){
+        if (mat[n][w] != mat[n-1][w]) {
+            itens.push_back(n-1);
+            w -= peso[n-1];
+        }
+        n--;
+    }
+    return itens;
+}
 ```
 
 <div style="page-break-after: always;"></div>
@@ -493,6 +773,72 @@ int update(tree *arv, int i, int valor){
 
 <div style="page-break-after: always;"></div>
 
+## lis
+
+```cpp
+using namespace std;
+
+int LIS(vector<int>& arr)
+{
+    // Binary search approach
+    int n = arr.size();
+    vector<int> ans;
+    ans.push_back(arr[0]);
+    for(int i=1;i<arr.size();i++){
+        if (arr[i] > ans.back()) {
+
+            // If the current number is greater
+            // than the last element of the answer
+            // vector, it means we have found a
+            // longer increasing subsequence.
+            // Hence, we append the current number
+            // to the answer vector.
+            ans.push_back(arr[i]);
+        }
+        else {
+
+            // If the current number is not
+            // greater than the last element of
+            // the answer vector, we perform
+            // a binary search to find the smallest
+            // element in the answer vector that
+            // is greater than or equal to the
+            // current number.
+
+            // The lower_bound function returns
+            // an iterator pointing to the first
+            // element that is not less than
+            // the current number.
+            int low = lower_bound(ans.begin(), ans.end(),
+                                  arr[i])
+                      - ans.begin();
+
+            // We update the element at the
+            // found position with the current number.
+            // By doing this, we are maintaining
+            // a sorted order in the answer vector.
+            ans[low] = arr[i];
+        }
+    }
+    return ans.size();
+}
+
+int main(){
+    int n;
+    vector<int> v;
+    cin>>n;
+    while(n--){
+        int aux;
+        cin>>aux;
+        v.push_back(aux);
+    }
+    cout<<LIS(v)<<endl;
+    return 0;
+}
+```
+
+<div style="page-break-after: always;"></div>
+
 ## Utilidades
 
 ```cpp
@@ -517,6 +863,86 @@ get<i>(t);
 #define BitSet(var, bit) var |= (1 << bit)
 #define BitClear(var, bit) var &= ~(1 << bit)
 
+```
+
+<div style="page-break-after: always;"></div>
+
+## convex
+
+```cpp
+using namespace std;
+
+struct pt {
+    double x, y;
+    bool operator == (pt const& t) const {
+        return x == t.x && y == t.y;
+    }
+};
+
+int orientation(pt a, pt b, pt c) {
+    double v = a.x*(b.y-c.y)+b.x*(c.y-a.y)+c.x*(a.y-b.y);
+    if (v < 0) return -1; // clockwise
+    if (v > 0) return +1; // counter-clockwise
+    return 0;
+}
+
+bool cw(pt a, pt b, pt c, bool include_collinear) {
+    int o = orientation(a, b, c);
+    return o < 0 || (include_collinear && o == 0);
+}
+bool collinear(pt a, pt b, pt c) { return orientation(a, b, c) == 0; }
+
+void convex_hull(vector<pair<pt,int>>& a, bool include_collinear = false) {
+    pair<pt,int> p0 = *min_element(a.begin(), a.end(), [](auto a, auto b) {
+        return make_pair(a.first.y, a.first.x) < make_pair(b.first.y, b.first.x);
+    });
+    sort(a.begin(), a.end(), [&p0](const auto& a, const auto& b) {
+        int o = orientation(p0.first, a.first, b.first);
+        if (o == 0)
+            return (p0.first.x-a.first.x)*(p0.first.x-a.first.x) + (p0.first.y-a.first.y)*(p0.first.y-a.first.y)
+                < (p0.first.x-b.first.x)*(p0.first.x-b.first.x) + (p0.first.y-b.first.y)*(p0.first.y-b.first.y);
+        return o < 0;
+    });
+    if (include_collinear) {
+        int i = (int)a.size()-1;
+        while (i >= 0 && collinear(p0.first, a[i].first, a.back().first)) i--;
+        reverse(a.begin()+i+1, a.end());
+    }
+
+    vector<pair<pt,int>> st;
+    for (int i = 0; i < (int)a.size(); i++) {
+        while (st.size() > 1 && !cw(st[st.size()-2].first, st.back().first, a[i].first, include_collinear))
+            st.pop_back();
+        st.push_back(a[i]);
+    }
+
+    if (include_collinear == false && st.size() == 2 && st[0] == st[1])
+        st.pop_back();
+
+    a = st;
+}
+
+bool cmp(pair<pt,int> x,pair<pt,int> y){
+    return x.second<y.second;
+}
+
+int main(){
+    int n;
+    vector<pair<pt,int>> v;
+    cin>>n;
+    for(int i=1;i<=n;i++){
+        double x,y;
+        cin>>x>>y;
+        pt a;
+        a.x=x;a.y=y;
+        v.push_back(make_pair(a,i));
+    }
+    convex_hull(v,true);
+    sort(v.begin(),v.end(),cmp);
+    cout<<v[0].second;
+    for(int i=1;i<v.size();i++) cout<<" "<<v[i].second;
+    cout<<endl;
+}
 ```
 
 <div style="page-break-after: always;"></div>
