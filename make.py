@@ -9,10 +9,26 @@ text = "# Notebook de Maratona\n"
 current_dir = os.getcwd()
 
 # Listar arquivos que terminam com .cpp
-cpp_files = [f for f in os.listdir(current_dir) if f.endswith('.cpp')]
+algoritimos_path = os.path.join(current_dir, "algoritimos")
+categories = [f for f in os.listdir(algoritimos_path) if os.path.isdir(os.path.join(algoritimos_path, f))]
+cpp_extra_files = [f for f in os.listdir(current_dir) if f.endswith('.cpp')]
 
-for file in cpp_files:
-    text += f"\n## {file.split('.')[0]}\n\n"
+for category in categories:
+    category_path = os.path.join(algoritimos_path, category)
+    cpp_files = [f for f in os.listdir(category_path) if f.endswith('.cpp')]
+    text += f"\n## {category}\n"
+    for file in cpp_files:
+        text += f"\n### {file.split('.')[0]}\n\n"
+        text += f"```cpp\n"
+        with open(os.path.join(algoritimos_path, category, file), 'r') as f:
+            lines = f.readlines()[2:]  # Ignorar cabecalho
+            text += ''.join(lines)
+        text += f"\n```\n\n"
+        text += '<div style="page-break-after: always;"></div>\n'
+
+text += f"\n## Extra\n"
+for file in cpp_extra_files:
+    text += f"\n### {file.split('.')[0]}\n\n"
     text += f"```cpp\n"
     with open(file, 'r') as f:
         lines = f.readlines()[2:]  # Ignorar cabecalho
