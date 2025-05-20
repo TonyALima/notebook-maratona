@@ -2,7 +2,7 @@
 
 ### [Veja Online](https://github.com/TonyALima/notebook-maratona/blob/main/notebook.md)
 
-### [Download PDF](https://github.com/TonyALima/notebook-maratona/releases/download/v1.1/Notebook.pdf)
+### [Download PDF](https://github.com/TonyALima/notebook-maratona/raw/refs/heads/main/notebook.pdf?download=)
 
 ## Orientações
 
