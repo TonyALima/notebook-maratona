@@ -29,8 +29,10 @@ void convex_hull(vector<pair<pt,int>>& a, bool include_collinear = false) {
     sort(a.begin(), a.end(), [&p0](const auto& a, const auto& b) {
         int o = orientation(p0.first, a.first, b.first);
         if (o == 0)
-            return (p0.first.x-a.first.x)*(p0.first.x-a.first.x) + (p0.first.y-a.first.y)*(p0.first.y-a.first.y)
-                < (p0.first.x-b.first.x)*(p0.first.x-b.first.x) + (p0.first.y-b.first.y)*(p0.first.y-b.first.y);
+            return (p0.first.x-a.first.x)*(p0.first.x-a.first.x) + 
+                    (p0.first.y-a.first.y)*(p0.first.y-a.first.y)
+                    < (p0.first.x-b.first.x)*(p0.first.x-b.first.x) + 
+                    (p0.first.y-b.first.y)*(p0.first.y-b.first.y);
         return o < 0;
     });
     if (include_collinear) {
@@ -41,7 +43,8 @@ void convex_hull(vector<pair<pt,int>>& a, bool include_collinear = false) {
 
     vector<pair<pt,int>> st;
     for (int i = 0; i < (int)a.size(); i++) {
-        while (st.size() > 1 && !cw(st[st.size()-2].first, st.back().first, a[i].first, include_collinear))
+        while (st.size() > 1 && 
+                !cw(st[st.size()-2].first, st.back().first, a[i].first, include_collinear))
             st.pop_back();
         st.push_back(a[i]);
     }
