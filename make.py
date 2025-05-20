@@ -11,7 +11,6 @@ current_dir = os.getcwd()
 # Listar arquivos que terminam com .cpp
 algoritimos_path = os.path.join(current_dir, "algoritimos")
 categories = [f for f in os.listdir(algoritimos_path) if os.path.isdir(os.path.join(algoritimos_path, f))]
-cpp_extra_files = [f for f in os.listdir(current_dir) if f.endswith('.cpp')]
 
 for category in categories:
     category_path = os.path.join(algoritimos_path, category)
@@ -26,23 +25,12 @@ for category in categories:
         text += f"\n```\n\n"
         text += '<div style="page-break-after: always;"></div>\n'
 
-text += f"\n## Extra\n"
-for file in cpp_extra_files:
-    text += f"\n### {file.split('.')[0]}\n\n"
-    text += f"```cpp\n"
-    with open(file, 'r') as f:
-        lines = f.readlines()[2:]  # Ignorar cabecalho
-        text += ''.join(lines)
-    text += f"\n```\n\n"
-    text += '<div style="page-break-after: always;"></div>\n'
-
 file = "formulas.md"
 with open(file, 'r') as f:
     text += f.read()
 
 with open(notebook, 'w') as f:
     f.write(text)
-
 
 # Check if the specified files exist
 css_path = "style/adwaita.css"
