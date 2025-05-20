@@ -1,4 +1,3 @@
-# Notebook de Maratona
 
 ## String
 
