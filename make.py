@@ -11,10 +11,12 @@ current_dir = os.getcwd()
 # Listar arquivos que terminam com .cpp
 algoritimos_path = os.path.join(current_dir, "algoritimos")
 categories = [f for f in os.listdir(algoritimos_path) if os.path.isdir(os.path.join(algoritimos_path, f))]
+categories.sort()
 
 for category in categories:
     category_path = os.path.join(algoritimos_path, category)
     cpp_files = [f for f in os.listdir(category_path) if f.endswith('.cpp')]
+    cpp_files.sort()
     text += f"\n## {category}\n"
     for file in cpp_files:
         text += f"\n### {file.split('.')[0]}\n\n"
