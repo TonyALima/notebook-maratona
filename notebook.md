@@ -1,6 +1,36 @@
 
 ## Extra
 
+### Utilidades
+
+```cpp
+
+// Precisao 2 casas decimais de float para impressao
+cout << fixed << setprecision(2);
+
+// Criar pair
+make_pair(1, 2);
+
+// Criar tupla
+make_tuple(1, 2, 3);
+
+// Pegar elemento i da tupla
+get<i>(t);
+
+// infinito
+#define INF 0x3F3F3F3F
+
+// Operacoes BitWise 
+#define BitTest(var, bit) var & (1 << bit)
+#define BitSet(var, bit) var |= (1 << bit)
+#define BitClear(var, bit) var &= ~(1 << bit)
+
+```
+
+<div style="page-break-after: always;"></div>
+
+## Geometria
+
 ### Convex-Hull
 
 ```cpp
@@ -81,191 +111,6 @@ int main(){
 ```
 
 <div style="page-break-after: always;"></div>
-
-### Crt
-
-```cpp
-struct Congruence {
-    long long a, m;
-};
-//Calcular Chinese Remainder Theorem, usa inverso modular
-long long mod_inv(long long a, long long m) {
-    if (a <= 1) return a;
-    return m - (mod_inv(m % a, a) * (m / a) % m);
-}
-
-long long chinese_remainder_theorem(vector<Congruence> const& congruences) {
-    long long M = 1;
-    for (auto const& congruence : congruences) {
-        M *= congruence.m;
-    }
-
-    long long solution = 0;
-    for (auto const& congruence : congruences) {
-        long long a_i = congruence.a;
-        long long M_i = M / congruence.m;
-        long long N_i = mod_inv(M_i, congruence.m);
-        solution = (solution + a_i * M_i % M * N_i) % M;
-    }
-    return solution;
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-### Lis
-
-```cpp
-//Calcula a maior subsequencia crescente
-//O(nlogn)
-int LIS(vector<int>& arr)
-{
-    // Binary search approach
-    int n = arr.size();
-    vector<int> ans;
-    ans.push_back(arr[0]);
-    for(int i=1;i<arr.size();i++){
-        if (arr[i] > ans.back()) {
-            // Se numero foi maior bota ele na sequencia
-            ans.push_back(arr[i]);
-        }
-        else {
-            //Senao troca o menor numero maior q ele por ele
-            int low = lower_bound(ans.begin(), ans.end(),
-                                  arr[i])
-                      - ans.begin();
-            ans[low] = arr[i];
-        }
-    }
-    return ans.size();
-}
-
-int main(){
-    int n;
-    vector<int> v;
-    cin>>n;
-    while(n--){
-        int aux;
-        cin>>aux;
-        v.push_back(aux);
-    }
-    cout<<LIS(v)<<endl;
-    return 0;
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-### Trie
-
-```cpp
-//Cria um dicionario de prefixos
-const int K = 26;
-struct Vertex {
-    int next[K];
-    int output = 0;
-    bool eliminado = false;
-    Vertex() {
-        fill(begin(next), end(next), -1);
-    }
-};
-vector<Vertex> trie(1);
-//Adiciona o prefixo e da update no output
-int add_string(string const& s) {
-    int v = 0;
-    for (char ch : s) {
-        int c = ch - 'a';
-        if(trie[v].eliminado) return 0;
-        if (trie[v].next[c] == -1) {
-            trie[v].next[c] = trie.size();
-            trie.emplace_back();
-        }
-        v = trie[v].next[c];
-    }
-    if(trie[v].eliminado) return 0;
-    trie[v].output++;
-    return 1;
-}
-//Conta quantos prefixos terminam dps do ponto
-int conta_out(int v){
-    int res=0;
-    if(trie[v].eliminado) return 0;
-    for(int i=0;i<K;i++){
-        if(trie[v].next[i]!=-1){
-            res+=conta_out(trie[v].next[i]);
-        }
-    }
-    res+=trie[v].output;
-    return res;
-}
-//Apaga o prefixo e conta os eliminados
-int remove_string(string const& s){
-    int v = 0;
-    for (char ch : s) {
-        int c = ch - 'a';
-        if(trie[v].eliminado) return 0;
-        if (trie[v].next[c] == -1) {
-            trie[v].next[c] = trie.size();
-            trie.emplace_back();
-        }
-        v = trie[v].next[c];
-    }
-    int res=conta_out(v);
-    trie[v].eliminado = true;
-    return res;
-}
-
-
-int main(){
-    int n,res=0;
-    cin>>n;
-    while(n--){
-        int tipo;
-        string s;
-        cin>>tipo;
-        cin>>s;
-        if(tipo==2) res+=add_string(s);
-        else res-=remove_string(s);
-        cout<<res<<endl;
-    }
-    return 0;
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-### Utilidades
-
-```cpp
-
-// Precisao 2 casas decimais de float para impressao
-cout << fixed << setprecision(2);
-
-// Criar pair
-make_pair(1, 2);
-
-// Criar tupla
-make_tuple(1, 2, 3);
-
-// Pegar elemento i da tupla
-get<i>(t);
-
-// infinito
-#define INF 0x3F3F3F3F
-
-// Operacoes BitWise 
-#define BitTest(var, bit) var & (1 << bit)
-#define BitSet(var, bit) var |= (1 << bit)
-#define BitClear(var, bit) var &= ~(1 << bit)
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## Geometria
 
 ### Interseccao
 
@@ -637,6 +482,38 @@ void crivo(int n){
 
 <div style="page-break-after: always;"></div>
 
+### Crt
+
+```cpp
+struct Congruence {
+    long long a, m;
+};
+//Calcular Chinese Remainder Theorem, usa inverso modular
+long long mod_inv(long long a, long long m) {
+    if (a <= 1) return a;
+    return m - (mod_inv(m % a, a) * (m / a) % m);
+}
+
+long long chinese_remainder_theorem(vector<Congruence> const& congruences) {
+    long long M = 1;
+    for (auto const& congruence : congruences) {
+        M *= congruence.m;
+    }
+
+    long long solution = 0;
+    for (auto const& congruence : congruences) {
+        long long a_i = congruence.a;
+        long long M_i = M / congruence.m;
+        long long N_i = mod_inv(M_i, congruence.m);
+        solution = (solution + a_i * M_i % M * N_i) % M;
+    }
+    return solution;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
 ### FFT
 
 ```cpp
@@ -868,6 +745,50 @@ vector<int> escolhidos(int W, int n){
 
 <div style="page-break-after: always;"></div>
 
+### Lis
+
+```cpp
+//Calcula a maior subsequencia crescente
+//O(nlogn)
+int LIS(vector<int>& arr)
+{
+    // Binary search approach
+    int n = arr.size();
+    vector<int> ans;
+    ans.push_back(arr[0]);
+    for(int i=1;i<arr.size();i++){
+        if (arr[i] > ans.back()) {
+            // Se numero foi maior bota ele na sequencia
+            ans.push_back(arr[i]);
+        }
+        else {
+            //Senao troca o menor numero maior q ele por ele
+            int low = lower_bound(ans.begin(), ans.end(),
+                                  arr[i])
+                      - ans.begin();
+            ans[low] = arr[i];
+        }
+    }
+    return ans.size();
+}
+
+int main(){
+    int n;
+    vector<int> v;
+    cin>>n;
+    while(n--){
+        int aux;
+        cin>>aux;
+        v.push_back(aux);
+    }
+    cout<<LIS(v)<<endl;
+    return 0;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
 ### Segment-Tree
 
 ```cpp
@@ -940,6 +861,85 @@ int levenshtein(const string& a, const string& b) {
     }
 
     return dp[m][n];
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Trie
+
+```cpp
+//Cria um dicionario de prefixos
+const int K = 26;
+struct Vertex {
+    int next[K];
+    int output = 0;
+    bool eliminado = false;
+    Vertex() {
+        fill(begin(next), end(next), -1);
+    }
+};
+vector<Vertex> trie(1);
+//Adiciona o prefixo e da update no output
+int add_string(string const& s) {
+    int v = 0;
+    for (char ch : s) {
+        int c = ch - 'a';
+        if(trie[v].eliminado) return 0;
+        if (trie[v].next[c] == -1) {
+            trie[v].next[c] = trie.size();
+            trie.emplace_back();
+        }
+        v = trie[v].next[c];
+    }
+    if(trie[v].eliminado) return 0;
+    trie[v].output++;
+    return 1;
+}
+//Conta quantos prefixos terminam dps do ponto
+int conta_out(int v){
+    int res=0;
+    if(trie[v].eliminado) return 0;
+    for(int i=0;i<K;i++){
+        if(trie[v].next[i]!=-1){
+            res+=conta_out(trie[v].next[i]);
+        }
+    }
+    res+=trie[v].output;
+    return res;
+}
+//Apaga o prefixo e conta os eliminados
+int remove_string(string const& s){
+    int v = 0;
+    for (char ch : s) {
+        int c = ch - 'a';
+        if(trie[v].eliminado) return 0;
+        if (trie[v].next[c] == -1) {
+            trie[v].next[c] = trie.size();
+            trie.emplace_back();
+        }
+        v = trie[v].next[c];
+    }
+    int res=conta_out(v);
+    trie[v].eliminado = true;
+    return res;
+}
+
+
+int main(){
+    int n,res=0;
+    cin>>n;
+    while(n--){
+        int tipo;
+        string s;
+        cin>>tipo;
+        cin>>s;
+        if(tipo==2) res+=add_string(s);
+        else res-=remove_string(s);
+        cout<<res<<endl;
+    }
+    return 0;
 }
 
 ```
