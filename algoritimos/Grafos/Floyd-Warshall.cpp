@@ -6,13 +6,16 @@ int m[][], custo[][];
 
 bool floydWarshall(int n){
     int i, j, k;
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n; j++)
-            custo[i][j] = m[i][j];
-
-    for (i = 0; i < n; i++)
+    for (i = 0; i < n; i++){
         for (j = 0; j < n; j++){
-            for (k = 0; k < n; k++){
+            if (i == j) custo[i][j] = 0;
+            else custo[i][j] = m[i][j];
+        }
+    }
+
+    for (k = 0; k < n; i++)
+        for (j = 0; j < n; j++){
+            for (i = 0; i < n; k++){
                 if (custo[i][k] != INF && custo[k][j] != INF &&
                     custo[i][j] > custo[i][k] + custo[k][j])
                     custo[i][j] = custo[i][k] + custo[k][j];
