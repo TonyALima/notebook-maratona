@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
-
 using namespace std;
-
+//Cria o menor poligono convexo que contem todos os pontos
+//O(nlogn)
 struct pt {
     double x, y;
     bool operator == (pt const& t) const {
