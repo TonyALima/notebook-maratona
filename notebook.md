@@ -114,39 +114,11 @@ long long chinese_remainder_theorem(vector<Congruence> const& congruences) {
 
 <div style="page-break-after: always;"></div>
 
-### Utilidades
+### Lis
 
 ```cpp
-
-// Precisao 2 casas decimais de float para impressao
-cout << fixed << setprecision(2);
-
-// Criar pair
-make_pair(1, 2);
-
-// Criar tupla
-make_tuple(1, 2, 3);
-
-// Pegar elemento i da tupla
-get<i>(t);
-
-// infinito
-#define INF 0x3F3F3F3F
-
-// Operacoes BitWise 
-#define BitTest(var, bit) var & (1 << bit)
-#define BitSet(var, bit) var |= (1 << bit)
-#define BitClear(var, bit) var &= ~(1 << bit)
-
-```
-
-<div style="page-break-after: always;"></div>
-
-### lis
-
-```cpp
-using namespace std;
-
+//Calcula a maior subsequencia crescente
+//O(nlogn)
 int LIS(vector<int>& arr)
 {
     // Binary search approach
@@ -155,37 +127,14 @@ int LIS(vector<int>& arr)
     ans.push_back(arr[0]);
     for(int i=1;i<arr.size();i++){
         if (arr[i] > ans.back()) {
-
-            // If the current number is greater
-            // than the last element of the answer
-            // vector, it means we have found a
-            // longer increasing subsequence.
-            // Hence, we append the current number
-            // to the answer vector.
+            // Se numero foi maior bota ele na sequencia
             ans.push_back(arr[i]);
         }
         else {
-
-            // If the current number is not
-            // greater than the last element of
-            // the answer vector, we perform
-            // a binary search to find the smallest
-            // element in the answer vector that
-            // is greater than or equal to the
-            // current number.
-
-            // The lower_bound function returns
-            // an iterator pointing to the first
-            // element that is not less than
-            // the current number.
+            //Senao troca o menor numero maior q ele por ele
             int low = lower_bound(ans.begin(), ans.end(),
                                   arr[i])
                       - ans.begin();
-
-            // We update the element at the
-            // found position with the current number.
-            // By doing this, we are maintaining
-            // a sorted order in the answer vector.
             ans[low] = arr[i];
         }
     }
@@ -204,14 +153,15 @@ int main(){
     cout<<LIS(v)<<endl;
     return 0;
 }
+
 ```
 
 <div style="page-break-after: always;"></div>
 
-### trie
+### Trie
 
 ```cpp
-
+//Cria um dicionario de prefixos
 const int K = 26;
 struct Vertex {
     int next[K];
@@ -222,7 +172,7 @@ struct Vertex {
     }
 };
 vector<Vertex> trie(1);
-
+//Adiciona o prefixo e da update no output
 int add_string(string const& s) {
     int v = 0;
     for (char ch : s) {
@@ -238,7 +188,7 @@ int add_string(string const& s) {
     trie[v].output++;
     return 1;
 }
-
+//Conta quantos prefixos terminam dps do ponto
 int conta_out(int v){
     int res=0;
     if(trie[v].eliminado) return 0;
@@ -250,7 +200,7 @@ int conta_out(int v){
     res+=trie[v].output;
     return res;
 }
-
+//Apaga o prefixo e conta os eliminados
 int remove_string(string const& s){
     int v = 0;
     for (char ch : s) {
@@ -282,6 +232,35 @@ int main(){
     }
     return 0;
 }
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Utilidades
+
+```cpp
+
+// Precisao 2 casas decimais de float para impressao
+cout << fixed << setprecision(2);
+
+// Criar pair
+make_pair(1, 2);
+
+// Criar tupla
+make_tuple(1, 2, 3);
+
+// Pegar elemento i da tupla
+get<i>(t);
+
+// infinito
+#define INF 0x3F3F3F3F
+
+// Operacoes BitWise 
+#define BitTest(var, bit) var & (1 << bit)
+#define BitSet(var, bit) var |= (1 << bit)
+#define BitClear(var, bit) var &= ~(1 << bit)
+
 ```
 
 <div style="page-break-after: always;"></div>
