@@ -7,6 +7,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
     - uses: actions/checkout@v4
@@ -29,10 +31,4 @@ jobs:
     - name: Generate PDF
       run: python make.py
       
-    - name: Commit and push changes
-      run: |
-        git config --global user.name "github-actions"
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add . # or specify your PDF file directly
-        git diff --quiet && git diff --staged --quiet || git commit -m "Auto-generated PDF update"
-        git push
+    - uses: stefanzweifel/git-auto-commit-action@v5
