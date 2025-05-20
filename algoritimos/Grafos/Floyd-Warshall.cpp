@@ -13,9 +13,9 @@ bool floydWarshall(int n){
         }
     }
 
-    for (k = 0; k < n; i++)
-        for (j = 0; j < n; j++){
-            for (i = 0; i < n; k++){
+    for (k = 0; k < n; k++)
+        for (i = 0; i < n; i++){
+            for (j = 0; j < n; j++){
                 if (custo[i][k] != INF && custo[k][j] != INF &&
                     custo[i][j] > custo[i][k] + custo[k][j])
                     custo[i][j] = custo[i][k] + custo[k][j];
