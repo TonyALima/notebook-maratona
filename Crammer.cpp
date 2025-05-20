@@ -1,9 +1,11 @@
-//Matematica
+#include <bits/stdc++.h>
+using namespace std;
+
 //Usa determinante para resolver sistemas
 //O(n^4)
-
 double A[20][20],b[20],X[20];
-double det(int n){//Calcula o determinante sem compremeter a matriz O(n^3)
+//Calcula o determinante sem comprometer a matriz O(n^3)
+double det(int n){
     double mat[n][n],res=1;
     int mxI;
     for(int i=0;i<n;i++)
