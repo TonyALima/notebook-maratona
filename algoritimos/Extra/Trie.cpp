@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-
+//Cria um dicionario de prefixos
 const int K = 26;
 struct Vertex {
     int next[K];
@@ -11,7 +11,7 @@ struct Vertex {
     }
 };
 vector<Vertex> trie(1);
-
+//Adiciona o prefixo e da update no output
 int add_string(string const& s) {
     int v = 0;
     for (char ch : s) {
@@ -27,7 +27,7 @@ int add_string(string const& s) {
     trie[v].output++;
     return 1;
 }
-
+//Conta quantos prefixos terminam dps do ponto
 int conta_out(int v){
     int res=0;
     if(trie[v].eliminado) return 0;
@@ -39,7 +39,7 @@ int conta_out(int v){
     res+=trie[v].output;
     return res;
 }
-
+//Apaga o prefixo e conta os eliminados
 int remove_string(string const& s){
     int v = 0;
     for (char ch : s) {
