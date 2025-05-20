@@ -1,6 +1,540 @@
 # Notebook de Maratona
 
-## trie
+## string
+
+### Levenshtein
+
+```cpp
+
+// numero minimo de operacoes para transformar uma string em outra.
+int levenshtein(const string& a, const string& b) {
+    int m = a.size(), n = b.size();
+    vector<vector<int>> dp(m+1, vector<int>(n+1));
+
+    // Inicializa bordas
+    for (int i = 0; i <= m; ++i) dp[i][0] = i;
+    for (int j = 0; j <= n; ++j) dp[0][j] = j;
+
+    // Preenche a matriz
+    for (int i = 1; i <= m; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            int cost = (a[i-1] == b[j-1]) ? 0 : 1;
+            dp[i][j] = min({
+                dp[i-1][j] + 1,     // deletar
+                dp[i][j-1] + 1,     // inserir
+                dp[i-1][j-1] + cost // substituir
+            });
+        }
+    }
+
+    return dp[m][n];
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+## matematica
+
+### Crammer
+
+```cpp
+
+//Usa determinante para resolver sistemas
+//O(n^4)
+double A[20][20],b[20],X[20];
+//Calcula o determinante sem comprometer a matriz O(n^3)
+double det(int n){
+    double mat[n][n],res=1;
+    int mxI;
+    for(int i=0;i<n;i++)
+        for(int j=0;j<n;j++) mat[i][j]=A[i][j];
+    for(int i=0;i<n;i++){
+        mxI=i;
+        for(int j=i+1;j<n;j++){
+            if(mat[j][i]>mat[mxI][i]) mxI=j;
+        }
+        if(mxI!=i){
+            for(int j=0;j<n;j++){
+                double aux=mat[mxI][j];
+                mat[mxI][j]=mat[i][j];
+                mat[i][j]=aux;
+            }
+            res=-res;
+        }
+        if(abs(mat[i][i])<1e-12) return NAN;
+        for(int j=i+1;j<n;j++){
+            double F=-mat[j][i]/mat[i][i];
+            for(int k=0;k<n;k++) mat[j][k]+=F*mat[i][k];
+        }
+    }
+    for(int i=0;i<n;i++) res*=mat[i][i];
+    return res;
+}
+
+void solver(int n){
+    double d=det(n);
+    double aux[n];
+    //if(abs(d)<1e-12) return;//determinante = 0
+    for(int i=0;i<n;i++){
+        for(int j=0;j<n;j++){
+            aux[j]=A[j][i];
+            A[j][i]=b[j];
+        }
+        X[i]=det(n)/d;
+        for(int j=0;j<n;j++) A[j][i]=aux[j];
+    }
+}
+```
+
+<div style="page-break-after: always;"></div>
+
+### Gauss
+
+```cpp
+#define NMAX 20
+
+// matriz ampliada de coeficientes
+double mat[NMAX][NMAX+1];
+double sol[NMAX];
+
+void elimination(int n){
+    double factor;
+    for (int i = 0; i < n - 1; i++){
+        for (int j = i+1; j < n; j++){
+            factor = mat[j][i]/mat[i][i];
+            for (int k = 0; k < n + 1; k++){
+                mat[j][k] = mat[j][k] - factor*mat[i][k];
+            }
+        }
+    }
+}
+
+void solve(int n){
+    memset(sol, 0, sizeof(sol));
+    double s = 0;
+    for (int l = n - 1; l >= 0; l--) {
+        s = 0; 
+        for (int j = l; j < n; j++) {
+            s += sol[j]*mat[l][j];
+        }
+        sol[l] = (mat[l][n] - s) / mat[l][l];
+    }
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Fastpow
+
+```cpp
+//Potenciação rapida
+
+long long fast_power(long long base, long long power) {
+    long long result = 1;
+    while(power > 0) {
+
+        if(power % 2 == 1) { // Can also use (power & 1) to make code even faster
+            result = (result*base) ;
+        }
+        base = (base * base);
+        power = power / 2; // Can also use power >>= 1; to make code even faster
+    }
+    return result;
+}
+```
+
+<div style="page-break-after: always;"></div>
+
+### Crivo-de-Eratostenes
+
+```cpp
+// Cria um vetor de fatores primos / todos os primos ate N
+
+int fprimos[]; // inicializa com 0
+
+void crivo(int n){
+    fprimos[0] = fprimos[1] = 1;
+    for(int i = 2; i < n; i++){
+        if(fprimos[i] == 0){
+            fprimos[i] = i;
+        }
+        if (i * i < n){
+            for (int j = i*i; j < n; j+=i){
+                fprimos[j] = i;
+            }
+        }
+    }
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### fft
+
+```cpp
+using cd = complex<double>;
+const double PI = acos(-1);
+
+void fft(vector<cd> & a, bool invert) {//Usado para multiplicar polinomios e numeros mt grandes O(nlogn)
+    int n = a.size();
+
+    for (int i = 1, j = 0; i < n; i++) {
+        int bit = n >> 1;
+        for (; j & bit; bit >>= 1)
+            j ^= bit;
+        j ^= bit;
+
+        if (i < j)
+            swap(a[i], a[j]);
+    }
+
+    for (int len = 2; len <= n; len <<= 1) {
+        double ang = 2 * PI / len * (invert ? -1 : 1);
+        cd wlen(cos(ang), sin(ang));
+        for (int i = 0; i < n; i += len) {
+            cd w(1);
+            for (int j = 0; j < len / 2; j++) {
+                cd u = a[i+j], v = a[i+j+len/2] * w;
+                a[i+j] = u + v;
+                a[i+j+len/2] = u - v;
+                w *= wlen;
+            }
+        }
+    }
+
+    if (invert) {
+        for (cd & x : a)
+            x /= n;
+    }
+}
+
+vector<int> multiply(vector<int> const& a, vector<int> const& b) {
+    vector<cd> fa(a.begin(), a.end()), fb(b.begin(), b.end());
+    int n = 1;
+    while (n < a.size() + b.size()) 
+        n <<= 1;
+    fa.resize(n);
+    fb.resize(n);
+
+    fft(fa, false);
+    fft(fb, false);
+    for (int i = 0; i < n; i++)
+        fa[i] *= fb[i];
+    fft(fa, true);
+
+    vector<int> result(n);
+    for (int i = 0; i < n; i++)
+        result[i] = round(fa[i].real());
+    return result;
+}
+
+/*
+int carry = 0;
+    for (int i = 0; i < n; i++)
+        result[i] += carry;
+        carry = result[i] / 10;
+        result[i] %= 10;
+    }
+*/
+```
+
+<div style="page-break-after: always;"></div>
+
+## geometria
+
+### Interseccao
+
+```cpp
+
+typedef struct{double x, y;}Ponto;
+
+// Função para calcular o produto vetorial
+double crossProduct(Ponto a, Ponto b) {
+    return a.x * b.y - a.y * b.x;
+}
+
+bool doIntersect(Ponto p1, Ponto p2, Ponto p3, Ponto p4) {
+    double d1 = crossProduct({p3.x - p1.x, p3.y - p1.y}, {p2.x - p1.x, p2.y - p1.y});
+    double d2 = crossProduct({p4.x - p1.x, p4.y - p1.y}, {p2.x - p1.x, p2.y - p1.y});
+    double d3 = crossProduct({p1.x - p3.x, p1.y - p3.y}, {p4.x - p3.x, p4.y - p3.y});
+    double d4 = crossProduct({p2.x - p3.x, p2.y - p3.y}, {p4.x - p3.x, p4.y - p3.y});
+
+    return (d1 * d2 < 0) && (d3 * d4 < 0);
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+## grafos
+
+### Bellman-Ford
+
+```cpp
+// Caminho minimo com aresta negativa, caminho percorrido
+
+int m[][], custo[], anterior[];
+
+void bellmanFord(int s, int n){
+    int i, j, k;
+    for (i = 0; i < n; i++){
+        custo[i] = INF;
+        anterior[i] = -1;
+    }
+    custo[s] = 0;
+
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            for (k = 0; k < n; k++)
+                if (k != j && m[j][k] != 0 && custo[k] > custo[j]+m[j][k]){
+                    custo[k] = custo[j]+m[j][k];
+                    anterior[k] = j;
+                }
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Kruskall
+
+```cpp
+// arvore geradora minima
+// usa union find
+
+int mat[][];
+int pai[], rnk[];
+
+int find(int u){
+    while (u != pai[u]) u = pai[u];
+    return pai[u];
+}
+
+int merge(int u, int v){
+    u = find(u); v = find(v);
+    if(rnk[u] > rnk[v]) pai[v] = u; else pai[u] = v;
+    if(rnk[u] == rnk[v]) rnk[v]++;
+}
+
+int kruskall(int tam){
+    vector<tuple<int, int, int>> vec;
+    vector<tuple<int, int, int>>::iterator it;
+    int i, j, res = 0;
+    for (i = 0; i < tam; i++){
+        pai[i] = i; rnk[i] = 0;
+        for (j = 0; j < tam; j++) vec.push_back(make_tuple(mat[i][j], i, j));
+    }
+    sort(vec.begin(), vec.end());
+    for(it = vec.begin(); it != vec.end(); it++)
+        if (find(get<1>(*it)) != find(get<2>(*it))){
+            res += get<0>(*it); merge(get<1>(*it), get<1>(*it));
+        }
+    return res;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### BFS
+
+```cpp
+
+int mat[][];
+int vis[], anterior[];
+
+int BFS(int ini, int fim, int tam){ // 1 se tiver caminho, 0 caso nao
+    int i;
+    queue<int> fila;
+    for (i = 0; i < tam; i++){ vis[i] = 0; }
+    fila.push(ini); vis[ini] = 1; anterior[ini] = -1;
+    while (!fila.empty()){
+        for (i = 0; i < tam; i++){
+            if (!vis[i] && mat[fila.front()][i]){
+                if (i == fim) {anterior[i] = fila.front(); return 1;}
+                fila.push(i); anterior[i] = fila.front(); vis[i] = 1;
+            }
+        }
+        fila.pop();
+    }
+    return 0;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Floiyd-Warshall
+
+```cpp
+// Deteccao de ciclo negativo e caminho minimo para qualquer u, v
+
+int m[][], custo[][];
+
+bool floydWarshall(int n){
+    int i, j, k;
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            custo[i][j] = m[i][j];
+
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++){
+            for (k = 0; k < n; k++){
+                if (custo[i][k] != INF && custo[k][j] != INF &&
+                    custo[i][j] > custo[i][k] + custo[k][j])
+                    custo[i][j] = custo[i][k] + custo[k][j];
+            }
+            if (custo[j][j]< 0)
+                return true;
+        }
+    return false;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Edmonds-Karp
+
+```cpp
+//Usa BFS
+//Necessario fonte e sumidouro
+int rgrafo[][]; // alterar BFS para usar grafo residual.
+int fluxoMaximo(int ini, int fim, int tam){
+    int u, v;
+    int fluxo = 0;
+    int bot;
+    for(u = 0; u < tam; u++)
+        for(v = 0; v < tam; v++) rgrafo[u][v]=mat[u][v];
+    
+    while (BFS(ini, fim, tam)){
+        bot = INF;
+        for (v = fim; v != ini; v = anterior[v]){
+            u = anterior[v];
+            bot = min(bot, rgrafo[u][v]);
+        }
+        for (v = fim; v != ini; v = anterior[v]){
+            u = anterior[v];
+            rgrafo[u][v] -= bot; rgrafo[v][u] += bot; 
+        }
+        fluxo += bot;
+    }
+    return fluxo;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Dijkstra
+
+```cpp
+// Menor caminho
+
+typedef pair<int, int> ii;
+typedef vector<ii> vii;
+typedef vector<int> vi;
+
+vii adj[];
+vi custo(SIZE, INF);
+
+void dijkstra(int s){
+    custo[s] = 0;
+    priority_queue<ii, vii, greater<ii>> heap;
+    heap.push(ii(0, s));
+    while(!heap.empty()){
+        ii menor = heap.top(); heap.pop();
+        int d = menor.first, u = menor.second;
+        if (d > custo[u]) continue;
+        for (int i = 0; i < adj[u].size(); i++){
+            ii v = adj[u][i];
+            if(custo[u]+v.second < custo[v.first]){
+                custo[v.first] = custo[u] + v.second;
+                heap.push(ii(custo[v.first], v.first));
+            }
+        }
+    }
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Tarjan
+
+```cpp
+// componente fortemente conexo
+
+vector<int> adj[];
+stack<int> s;
+int c, t, dis[], low[], ins[];
+set<int> comp[]; set<int>::iterator sit;
+
+void DFS(int u){
+    dis[u] = low[u] = t++;
+    s.push(u); ins[u] = 1;
+    vector<int>::iterator it;
+    for(it = adj[u].begin(); it != adj[u].end(); it++){
+        int v = *it;
+        if(dis[v] == -1){ DFS(v); low[u] = min(low[u], low[v]);}
+        else if(ins[v] == 1) low[u] = min(low[u], dis[v]);
+    }
+    if (low[u] == dis[u]){
+        int w = 0;
+        while (s.top() != u){
+            w = s.top();
+            comp[c].insert(w); ins[w] = 0; s.pop();
+        }
+        w = s.top();
+        comp[c].insert(w); ins[w] = 0; s.pop();
+    } 
+}
+
+void tarjan(int n){
+    t = c = 0;
+    for (int i = 0; i < n; i++){
+        dis[i] = low[i] = -1; ins[i] = 0; comp[i].clear();
+    }
+    for(int i = 0; i < n; i++) if (dis[i] == -1) DFS(i);
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### DFS
+
+```cpp
+// deteccao de ciclos
+
+int mat[][];
+int vis[], rec[]; // inicializa com 0
+
+int DFS(int v, int tam){
+    if(!vis[v]){
+        vis[v] = 1;
+        rec[v] = 1;
+        for (int i = 0; i < tam; i++){
+            if (mat[v][i]){
+                if(!vis[i] && DFS(i, tam)) return 1;
+                else if(rec[i]) return 1;
+            }
+        }
+    }
+    rec[v] = 0;
+    return 0;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+## Extra
+
+### trie
 
 ```cpp
 
@@ -78,103 +612,7 @@ int main(){
 
 <div style="page-break-after: always;"></div>
 
-## Bellman-Ford
-
-```cpp
-// Caminho minimo com aresta negativa, caminho percorrido
-
-int m[][], custo[], anterior[];
-
-void bellmanFord(int s, int n){
-    int i, j, k;
-    for (i = 0; i < n; i++){
-        custo[i] = INF;
-        anterior[i] = -1;
-    }
-    custo[s] = 0;
-
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n; j++)
-            for (k = 0; k < n; k++)
-                if (k != j && m[j][k] != 0 && custo[k] > custo[j]+m[j][k]){
-                    custo[k] = custo[j]+m[j][k];
-                    anterior[k] = j;
-                }
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## Kruskall
-
-```cpp
-// arvore geradora minima
-// usa union find
-
-int mat[][];
-int pai[], rnk[];
-
-int find(int u){
-    while (u != pai[u]) u = pai[u];
-    return pai[u];
-}
-
-int merge(int u, int v){
-    u = find(u); v = find(v);
-    if(rnk[u] > rnk[v]) pai[v] = u; else pai[u] = v;
-    if(rnk[u] == rnk[v]) rnk[v]++;
-}
-
-int kruskall(int tam){
-    vector<tuple<int, int, int>> vec;
-    vector<tuple<int, int, int>>::iterator it;
-    int i, j, res = 0;
-    for (i = 0; i < tam; i++){
-        pai[i] = i; rnk[i] = 0;
-        for (j = 0; j < tam; j++) vec.push_back(make_tuple(mat[i][j], i, j));
-    }
-    sort(vec.begin(), vec.end());
-    for(it = vec.begin(); it != vec.end(); it++)
-        if (find(get<1>(*it)) != find(get<2>(*it))){
-            res += get<0>(*it); merge(get<1>(*it), get<1>(*it));
-        }
-    return res;
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## BFS
-
-```cpp
-
-int mat[][];
-int vis[], anterior[];
-
-int BFS(int ini, int fim, int tam){ // 1 se tiver caminho, 0 caso nao
-    int i;
-    queue<int> fila;
-    for (i = 0; i < tam; i++){ vis[i] = 0; }
-    fila.push(ini); vis[ini] = 1; anterior[ini] = -1;
-    while (!fila.empty()){
-        for (i = 0; i < tam; i++){
-            if (!vis[i] && mat[fila.front()][i]){
-                if (i == fim) {anterior[i] = fila.front(); return 1;}
-                fila.push(i); anterior[i] = fila.front(); vis[i] = 1;
-            }
-        }
-        fila.pop();
-    }
-    return 0;
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## Fenwick
+### Fenwick
 
 ```cpp
 // range query soma
@@ -208,7 +646,7 @@ int queryBIT(int index){
 
 <div style="page-break-after: always;"></div>
 
-## KnapSack
+### KnapSack
 
 ```cpp
 // Encher a mochila com maior valor
@@ -273,7 +711,7 @@ vector<int> escolhidos(int W, int n){
 
 <div style="page-break-after: always;"></div>
 
-## convex
+### convex
 
 ```cpp
 using namespace std;
@@ -353,7 +791,7 @@ int main(){
 
 <div style="page-break-after: always;"></div>
 
-## Utilidades
+### Utilidades
 
 ```cpp
 
@@ -381,60 +819,7 @@ get<i>(t);
 
 <div style="page-break-after: always;"></div>
 
-## Crammer
-
-```cpp
-
-//Usa determinante para resolver sistemas
-//O(n^4)
-double A[20][20],b[20],X[20];
-//Calcula o determinante sem comprometer a matriz O(n^3)
-double det(int n){
-    double mat[n][n],res=1;
-    int mxI;
-    for(int i=0;i<n;i++)
-        for(int j=0;j<n;j++) mat[i][j]=A[i][j];
-    for(int i=0;i<n;i++){
-        mxI=i;
-        for(int j=i+1;j<n;j++){
-            if(mat[j][i]>mat[mxI][i]) mxI=j;
-        }
-        if(mxI!=i){
-            for(int j=0;j<n;j++){
-                double aux=mat[mxI][j];
-                mat[mxI][j]=mat[i][j];
-                mat[i][j]=aux;
-            }
-            res=-res;
-        }
-        if(abs(mat[i][i])<1e-12) return NAN;
-        for(int j=i+1;j<n;j++){
-            double F=-mat[j][i]/mat[i][i];
-            for(int k=0;k<n;k++) mat[j][k]+=F*mat[i][k];
-        }
-    }
-    for(int i=0;i<n;i++) res*=mat[i][i];
-    return res;
-}
-
-void solver(int n){
-    double d=det(n);
-    double aux[n];
-    //if(abs(d)<1e-12) return;//determinante = 0
-    for(int i=0;i<n;i++){
-        for(int j=0;j<n;j++){
-            aux[j]=A[j][i];
-            A[j][i]=b[j];
-        }
-        X[i]=det(n)/d;
-        for(int j=0;j<n;j++) A[j][i]=aux[j];
-    }
-}
-```
-
-<div style="page-break-after: always;"></div>
-
-## crt
+### crt
 
 ```cpp
 struct Congruence {
@@ -465,76 +850,7 @@ long long chinese_remainder_theorem(vector<Congruence> const& congruences) {
 
 <div style="page-break-after: always;"></div>
 
-## Levenshtein
-
-```cpp
-
-// numero minimo de operacoes para transformar uma string em outra.
-int levenshtein(const string& a, const string& b) {
-    int m = a.size(), n = b.size();
-    vector<vector<int>> dp(m+1, vector<int>(n+1));
-
-    // Inicializa bordas
-    for (int i = 0; i <= m; ++i) dp[i][0] = i;
-    for (int j = 0; j <= n; ++j) dp[0][j] = j;
-
-    // Preenche a matriz
-    for (int i = 1; i <= m; ++i) {
-        for (int j = 1; j <= n; ++j) {
-            int cost = (a[i-1] == b[j-1]) ? 0 : 1;
-            dp[i][j] = min({
-                dp[i-1][j] + 1,     // deletar
-                dp[i][j-1] + 1,     // inserir
-                dp[i-1][j-1] + cost // substituir
-            });
-        }
-    }
-
-    return dp[m][n];
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## Gauss
-
-```cpp
-#define NMAX 20
-
-// matriz ampliada de coeficientes
-double mat[NMAX][NMAX+1];
-double sol[NMAX];
-
-void elimination(int n){
-    double factor;
-    for (int i = 0; i < n - 1; i++){
-        for (int j = i+1; j < n; j++){
-            factor = mat[j][i]/mat[i][i];
-            for (int k = 0; k < n + 1; k++){
-                mat[j][k] = mat[j][k] - factor*mat[i][k];
-            }
-        }
-    }
-}
-
-void solve(int n){
-    memset(sol, 0, sizeof(sol));
-    double s = 0;
-    for (int l = n - 1; l >= 0; l--) {
-        s = 0; 
-        for (int j = l; j < n; j++) {
-            s += sol[j]*mat[l][j];
-        }
-        sol[l] = (mat[l][n] - s) / mat[l][l];
-    }
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## lis
+### lis
 
 ```cpp
 using namespace std;
@@ -600,61 +916,7 @@ int main(){
 
 <div style="page-break-after: always;"></div>
 
-## Interseccao
-
-```cpp
-
-typedef struct{double x, y;}Ponto;
-
-// Função para calcular o produto vetorial
-double crossProduct(Ponto a, Ponto b) {
-    return a.x * b.y - a.y * b.x;
-}
-
-bool doIntersect(Ponto p1, Ponto p2, Ponto p3, Ponto p4) {
-    double d1 = crossProduct({p3.x - p1.x, p3.y - p1.y}, {p2.x - p1.x, p2.y - p1.y});
-    double d2 = crossProduct({p4.x - p1.x, p4.y - p1.y}, {p2.x - p1.x, p2.y - p1.y});
-    double d3 = crossProduct({p1.x - p3.x, p1.y - p3.y}, {p4.x - p3.x, p4.y - p3.y});
-    double d4 = crossProduct({p2.x - p3.x, p2.y - p3.y}, {p4.x - p3.x, p4.y - p3.y});
-
-    return (d1 * d2 < 0) && (d3 * d4 < 0);
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## Floiyd-Warshall
-
-```cpp
-// Deteccao de ciclo negativo e caminho minimo para qualquer u, v
-
-int m[][], custo[][];
-
-bool floydWarshall(int n){
-    int i, j, k;
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n; j++)
-            custo[i][j] = m[i][j];
-
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n; j++){
-            for (k = 0; k < n; k++){
-                if (custo[i][k] != INF && custo[k][j] != INF &&
-                    custo[i][j] > custo[i][k] + custo[k][j])
-                    custo[i][j] = custo[i][k] + custo[k][j];
-            }
-            if (custo[j][j]< 0)
-                return true;
-        }
-    return false;
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## Segment-Tree
+### Segment-Tree
 
 ```cpp
 // range query multiplicacao
@@ -692,258 +954,6 @@ int update(tree *arv, int i, int valor){
     if (arv->from == arv->to && arv->from == i) arv->valor = valor;
     else arv->valor = (update(arv->esq, i, valor)*update(arv->dir, i, valor));
     return arv->valor;
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## Edmonds-Karp
-
-```cpp
-//Usa BFS
-//Necessario fonte e sumidouro
-int rgrafo[][]; // alterar BFS para usar grafo residual.
-int fluxoMaximo(int ini, int fim, int tam){
-    int u, v;
-    int fluxo = 0;
-    int bot;
-    for(u = 0; u < tam; u++)
-        for(v = 0; v < tam; v++) rgrafo[u][v]=mat[u][v];
-    
-    while (BFS(ini, fim, tam)){
-        bot = INF;
-        for (v = fim; v != ini; v = anterior[v]){
-            u = anterior[v];
-            bot = min(bot, rgrafo[u][v]);
-        }
-        for (v = fim; v != ini; v = anterior[v]){
-            u = anterior[v];
-            rgrafo[u][v] -= bot; rgrafo[v][u] += bot; 
-        }
-        fluxo += bot;
-    }
-    return fluxo;
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## Dijkstra
-
-```cpp
-// Menor caminho
-
-typedef pair<int, int> ii;
-typedef vector<ii> vii;
-typedef vector<int> vi;
-
-vii adj[];
-vi custo(SIZE, INF);
-
-void dijkstra(int s){
-    custo[s] = 0;
-    priority_queue<ii, vii, greater<ii>> heap;
-    heap.push(ii(0, s));
-    while(!heap.empty()){
-        ii menor = heap.top(); heap.pop();
-        int d = menor.first, u = menor.second;
-        if (d > custo[u]) continue;
-        for (int i = 0; i < adj[u].size(); i++){
-            ii v = adj[u][i];
-            if(custo[u]+v.second < custo[v.first]){
-                custo[v.first] = custo[u] + v.second;
-                heap.push(ii(custo[v.first], v.first));
-            }
-        }
-    }
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## Fastpow
-
-```cpp
-//Potenciação rapida
-
-long long fast_power(long long base, long long power) {
-    long long result = 1;
-    while(power > 0) {
-
-        if(power % 2 == 1) { // Can also use (power & 1) to make code even faster
-            result = (result*base) ;
-        }
-        base = (base * base);
-        power = power / 2; // Can also use power >>= 1; to make code even faster
-    }
-    return result;
-}
-```
-
-<div style="page-break-after: always;"></div>
-
-## Crivo-de-Eratostenes
-
-```cpp
-// Cria um vetor de fatores primos / todos os primos ate N
-
-int fprimos[]; // inicializa com 0
-
-void crivo(int n){
-    fprimos[0] = fprimos[1] = 1;
-    for(int i = 2; i < n; i++){
-        if(fprimos[i] == 0){
-            fprimos[i] = i;
-        }
-        if (i * i < n){
-            for (int j = i*i; j < n; j+=i){
-                fprimos[j] = i;
-            }
-        }
-    }
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## Tarjan
-
-```cpp
-// componente fortemente conexo
-
-vector<int> adj[];
-stack<int> s;
-int c, t, dis[], low[], ins[];
-set<int> comp[]; set<int>::iterator sit;
-
-void DFS(int u){
-    dis[u] = low[u] = t++;
-    s.push(u); ins[u] = 1;
-    vector<int>::iterator it;
-    for(it = adj[u].begin(); it != adj[u].end(); it++){
-        int v = *it;
-        if(dis[v] == -1){ DFS(v); low[u] = min(low[u], low[v]);}
-        else if(ins[v] == 1) low[u] = min(low[u], dis[v]);
-    }
-    if (low[u] == dis[u]){
-        int w = 0;
-        while (s.top() != u){
-            w = s.top();
-            comp[c].insert(w); ins[w] = 0; s.pop();
-        }
-        w = s.top();
-        comp[c].insert(w); ins[w] = 0; s.pop();
-    } 
-}
-
-void tarjan(int n){
-    t = c = 0;
-    for (int i = 0; i < n; i++){
-        dis[i] = low[i] = -1; ins[i] = 0; comp[i].clear();
-    }
-    for(int i = 0; i < n; i++) if (dis[i] == -1) DFS(i);
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
-## fft
-
-```cpp
-using cd = complex<double>;
-const double PI = acos(-1);
-
-void fft(vector<cd> & a, bool invert) {//Usado para multiplicar polinomios e numeros mt grandes O(nlogn)
-    int n = a.size();
-
-    for (int i = 1, j = 0; i < n; i++) {
-        int bit = n >> 1;
-        for (; j & bit; bit >>= 1)
-            j ^= bit;
-        j ^= bit;
-
-        if (i < j)
-            swap(a[i], a[j]);
-    }
-
-    for (int len = 2; len <= n; len <<= 1) {
-        double ang = 2 * PI / len * (invert ? -1 : 1);
-        cd wlen(cos(ang), sin(ang));
-        for (int i = 0; i < n; i += len) {
-            cd w(1);
-            for (int j = 0; j < len / 2; j++) {
-                cd u = a[i+j], v = a[i+j+len/2] * w;
-                a[i+j] = u + v;
-                a[i+j+len/2] = u - v;
-                w *= wlen;
-            }
-        }
-    }
-
-    if (invert) {
-        for (cd & x : a)
-            x /= n;
-    }
-}
-
-vector<int> multiply(vector<int> const& a, vector<int> const& b) {
-    vector<cd> fa(a.begin(), a.end()), fb(b.begin(), b.end());
-    int n = 1;
-    while (n < a.size() + b.size()) 
-        n <<= 1;
-    fa.resize(n);
-    fb.resize(n);
-
-    fft(fa, false);
-    fft(fb, false);
-    for (int i = 0; i < n; i++)
-        fa[i] *= fb[i];
-    fft(fa, true);
-
-    vector<int> result(n);
-    for (int i = 0; i < n; i++)
-        result[i] = round(fa[i].real());
-    return result;
-}
-
-/*
-int carry = 0;
-    for (int i = 0; i < n; i++)
-        result[i] += carry;
-        carry = result[i] / 10;
-        result[i] %= 10;
-    }
-*/
-```
-
-<div style="page-break-after: always;"></div>
-
-## DFS
-
-```cpp
-// deteccao de ciclos
-
-int mat[][];
-int vis[], rec[]; // inicializa com 0
-
-int DFS(int v, int tam){
-    if(!vis[v]){
-        vis[v] = 1;
-        rec[v] = 1;
-        for (int i = 0; i < tam; i++){
-            if (mat[v][i]){
-                if(!vis[i] && DFS(i, tam)) return 1;
-                else if(rec[i]) return 1;
-            }
-        }
-    }
-    rec[v] = 0;
-    return 0;
 }
 
 ```
