@@ -243,85 +243,7 @@ int carry = 0;
 
 <div style="page-break-after: always;"></div>
 
-## Extra
-
-### trie
-
-```cpp
-
-const int K = 26;
-struct Vertex {
-    int next[K];
-    int output = 0;
-    bool eliminado = false;
-    Vertex() {
-        fill(begin(next), end(next), -1);
-    }
-};
-vector<Vertex> trie(1);
-
-int add_string(string const& s) {
-    int v = 0;
-    for (char ch : s) {
-        int c = ch - 'a';
-        if(trie[v].eliminado) return 0;
-        if (trie[v].next[c] == -1) {
-            trie[v].next[c] = trie.size();
-            trie.emplace_back();
-        }
-        v = trie[v].next[c];
-    }
-    if(trie[v].eliminado) return 0;
-    trie[v].output++;
-    return 1;
-}
-
-int conta_out(int v){
-    int res=0;
-    if(trie[v].eliminado) return 0;
-    for(int i=0;i<K;i++){
-        if(trie[v].next[i]!=-1){
-            res+=conta_out(trie[v].next[i]);
-        }
-    }
-    res+=trie[v].output;
-    return res;
-}
-
-int remove_string(string const& s){
-    int v = 0;
-    for (char ch : s) {
-        int c = ch - 'a';
-        if(trie[v].eliminado) return 0;
-        if (trie[v].next[c] == -1) {
-            trie[v].next[c] = trie.size();
-            trie.emplace_back();
-        }
-        v = trie[v].next[c];
-    }
-    int res=conta_out(v);
-    trie[v].eliminado = true;
-    return res;
-}
-
-
-int main(){
-    int n,res=0;
-    cin>>n;
-    while(n--){
-        int tipo;
-        string s;
-        cin>>tipo;
-        cin>>s;
-        if(tipo==2) res+=add_string(s);
-        else res-=remove_string(s);
-        cout<<res<<endl;
-    }
-    return 0;
-}
-```
-
-<div style="page-break-after: always;"></div>
+## Programacao-Dinamica
 
 ### Fenwick
 
@@ -417,6 +339,130 @@ vector<int> escolhidos(int W, int n){
         n--;
     }
     return itens;
+}
+```
+
+<div style="page-break-after: always;"></div>
+
+### Segment-Tree
+
+```cpp
+// range query multiplicacao
+
+int vet[];
+struct tree{
+    tree *esq, *dir;
+    int from, to, valor;
+    tree(int _from, int _to):from(_from), to(_to), dir(NULL), esq(NULL), valor(1){}
+};
+
+tree * build(int e, int d){
+    if (e > d) return NULL;
+    tree *res = new tree(e,d);
+    if (e == d) res->valor = vet[e];
+    else{
+        int m = (e+d)/2;
+        res->esq = build(e, m); res->dir = build(m+1, d);
+        if (res->esq != NULL) res->valor *= res->esq->valor;
+        if (res->dir != NULL) res->valor *= res->dir->valor;
+    }
+    return res;
+}
+
+int query(tree *arv, int e, int d){
+    if (arv == NULL) return 1;
+    if (e <= arv->from && arv->to >= d) return arv->valor;
+    if (e > arv->to) return 1; if (d < arv->from) return 1;
+    return query(arv->esq, e, d)*query(arv->dir, e, d);
+}
+
+int update(tree *arv, int i, int valor){
+    if (arv == NULL) return 1;
+    if (arv->to < i || arv->from > i) return arv->valor;
+    if (arv->from == arv->to && arv->from == i) arv->valor = valor;
+    else arv->valor = (update(arv->esq, i, valor)*update(arv->dir, i, valor));
+    return arv->valor;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+## Extra
+
+### trie
+
+```cpp
+
+const int K = 26;
+struct Vertex {
+    int next[K];
+    int output = 0;
+    bool eliminado = false;
+    Vertex() {
+        fill(begin(next), end(next), -1);
+    }
+};
+vector<Vertex> trie(1);
+
+int add_string(string const& s) {
+    int v = 0;
+    for (char ch : s) {
+        int c = ch - 'a';
+        if(trie[v].eliminado) return 0;
+        if (trie[v].next[c] == -1) {
+            trie[v].next[c] = trie.size();
+            trie.emplace_back();
+        }
+        v = trie[v].next[c];
+    }
+    if(trie[v].eliminado) return 0;
+    trie[v].output++;
+    return 1;
+}
+
+int conta_out(int v){
+    int res=0;
+    if(trie[v].eliminado) return 0;
+    for(int i=0;i<K;i++){
+        if(trie[v].next[i]!=-1){
+            res+=conta_out(trie[v].next[i]);
+        }
+    }
+    res+=trie[v].output;
+    return res;
+}
+
+int remove_string(string const& s){
+    int v = 0;
+    for (char ch : s) {
+        int c = ch - 'a';
+        if(trie[v].eliminado) return 0;
+        if (trie[v].next[c] == -1) {
+            trie[v].next[c] = trie.size();
+            trie.emplace_back();
+        }
+        v = trie[v].next[c];
+    }
+    int res=conta_out(v);
+    trie[v].eliminado = true;
+    return res;
+}
+
+
+int main(){
+    int n,res=0;
+    cin>>n;
+    while(n--){
+        int tipo;
+        string s;
+        cin>>tipo;
+        cin>>s;
+        if(tipo==2) res+=add_string(s);
+        else res-=remove_string(s);
+        cout<<res<<endl;
+    }
+    return 0;
 }
 ```
 
@@ -627,50 +673,6 @@ int main(){
 
 <div style="page-break-after: always;"></div>
 
-### Segment-Tree
-
-```cpp
-// range query multiplicacao
-
-int vet[];
-struct tree{
-    tree *esq, *dir;
-    int from, to, valor;
-    tree(int _from, int _to):from(_from), to(_to), dir(NULL), esq(NULL), valor(1){}
-};
-
-tree * build(int e, int d){
-    if (e > d) return NULL;
-    tree *res = new tree(e,d);
-    if (e == d) res->valor = vet[e];
-    else{
-        int m = (e+d)/2;
-        res->esq = build(e, m); res->dir = build(m+1, d);
-        if (res->esq != NULL) res->valor *= res->esq->valor;
-        if (res->dir != NULL) res->valor *= res->dir->valor;
-    }
-    return res;
-}
-
-int query(tree *arv, int e, int d){
-    if (arv == NULL) return 1;
-    if (e <= arv->from && arv->to >= d) return arv->valor;
-    if (e > arv->to) return 1; if (d < arv->from) return 1;
-    return query(arv->esq, e, d)*query(arv->dir, e, d);
-}
-
-int update(tree *arv, int i, int valor){
-    if (arv == NULL) return 1;
-    if (arv->to < i || arv->from > i) return arv->valor;
-    if (arv->from == arv->to && arv->from == i) arv->valor = valor;
-    else arv->valor = (update(arv->esq, i, valor)*update(arv->dir, i, valor));
-    return arv->valor;
-}
-
-```
-
-<div style="page-break-after: always;"></div>
-
 ## Grafos
 
 ### Bellman-Ford
@@ -769,7 +771,7 @@ int BFS(int ini, int fim, int tam){ // 1 se tiver caminho, 0 caso nao
 
 <div style="page-break-after: always;"></div>
 
-### Floiyd-Warshall
+### Floyd-Warshall
 
 ```cpp
 // Deteccao de ciclo negativo e caminho minimo para qualquer u, v
@@ -778,13 +780,16 @@ int m[][], custo[][];
 
 bool floydWarshall(int n){
     int i, j, k;
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n; j++)
-            custo[i][j] = m[i][j];
-
-    for (i = 0; i < n; i++)
+    for (i = 0; i < n; i++){
         for (j = 0; j < n; j++){
-            for (k = 0; k < n; k++){
+            if (i == j) custo[i][j] = 0;
+            else custo[i][j] = m[i][j];
+        }
+    }
+
+    for (k = 0; k < n; i++)
+        for (j = 0; j < n; j++){
+            for (i = 0; i < n; k++){
                 if (custo[i][k] != INF && custo[k][j] != INF &&
                     custo[i][j] > custo[i][k] + custo[k][j])
                     custo[i][j] = custo[i][k] + custo[k][j];
