@@ -1,39 +1,11 @@
 
 ## Extra
 
-### Utilidades
+### Convex-Hull
 
 ```cpp
-
-// Precisao 2 casas decimais de float para impressao
-cout << fixed << setprecision(2);
-
-// Criar pair
-make_pair(1, 2);
-
-// Criar tupla
-make_tuple(1, 2, 3);
-
-// Pegar elemento i da tupla
-get<i>(t);
-
-// infinito
-#define INF 0x3F3F3F3F
-
-// Operacoes BitWise 
-#define BitTest(var, bit) var & (1 << bit)
-#define BitSet(var, bit) var |= (1 << bit)
-#define BitClear(var, bit) var &= ~(1 << bit)
-
-```
-
-<div style="page-break-after: always;"></div>
-
-### convex
-
-```cpp
-using namespace std;
-
+//Cria o menor poligono convexo que contem todos os pontos
+//O(nlogn)
 struct pt {
     double x, y;
     bool operator == (pt const& t) const {
@@ -105,6 +77,35 @@ int main(){
     for(int i=1;i<v.size();i++) cout<<" "<<v[i].second;
     cout<<endl;
 }
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Utilidades
+
+```cpp
+
+// Precisao 2 casas decimais de float para impressao
+cout << fixed << setprecision(2);
+
+// Criar pair
+make_pair(1, 2);
+
+// Criar tupla
+make_tuple(1, 2, 3);
+
+// Pegar elemento i da tupla
+get<i>(t);
+
+// infinito
+#define INF 0x3F3F3F3F
+
+// Operacoes BitWise 
+#define BitTest(var, bit) var & (1 << bit)
+#define BitSet(var, bit) var |= (1 << bit)
+#define BitClear(var, bit) var &= ~(1 << bit)
+
 ```
 
 <div style="page-break-after: always;"></div>
