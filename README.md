@@ -12,6 +12,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+// Algoritmo que faz...
+
 
 ```
 
@@ -19,3 +21,5 @@ using namespace std;
 
   Utlilize letras maiúsculas e hífen para separar palavras.
   Ex: Nome-Algoritmo
+
+* **Adicione um comentário no inicio do código com uma breve descrição de sua funcionalidade**
