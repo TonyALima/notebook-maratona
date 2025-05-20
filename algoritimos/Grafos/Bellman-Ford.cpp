@@ -12,9 +12,9 @@ void bellmanFord(int s, int n){
     }
     custo[s] = 0;
 
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n; j++)
-            for (k = 0; k < n; k++)
+    for (k = 0; k < n; k++)
+        for (i = 0; i < n; i++)
+            for (j = 0; j < n; j++)
                 if (k != j && m[j][k] != 0 && custo[k] > custo[j]+m[j][k]){
                     custo[k] = custo[j]+m[j][k];
                     anterior[k] = j;
