@@ -2,8 +2,8 @@
 using namespace std;
 using cd = complex<double>;
 const double PI = acos(-1);
-
-void fft(vector<cd> & a, bool invert) {//Usado para multiplicar polinomios e numeros mt grandes O(nlogn)
+//Fast Fourier Transform O(nlogn)
+void fft(vector<cd> & a, bool invert) {//Usado para multiplicar polinomios
     int n = a.size();
 
     for (int i = 1, j = 0; i < n; i++) {
@@ -35,7 +35,7 @@ void fft(vector<cd> & a, bool invert) {//Usado para multiplicar polinomios e num
             x /= n;
     }
 }
-
+//Multiplicar polinomios e tambem somas possiveis de dois conjuntos de inteiros
 vector<int> multiply(vector<int> const& a, vector<int> const& b) {
     vector<cd> fa(a.begin(), a.end()), fb(b.begin(), b.end());
     int n = 1;
