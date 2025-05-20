@@ -1,4 +1,5 @@
-//Matematica
+
+
 //Potenciação rapida
 
 long long fast_power(long long base, long long power) {
