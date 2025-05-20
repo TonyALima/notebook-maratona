@@ -3,7 +3,7 @@ import pypandoc
 import pdfkit
 
 notebook = "notebook.md"
-text = "# Notebook de Maratona\n"
+text = ""
 
 # Diretório atual
 current_dir = os.getcwd()
