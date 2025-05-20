@@ -16,10 +16,15 @@ jobs:
       with:
         python-version: '3.x' # or your specific version
         
-    - name: Install dependencies
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y pandoc 
+        
+    - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt # if you have requirements
+        pip install -r requirements.txt 
         
     - name: Generate PDF
       run: python make.py
