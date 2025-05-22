@@ -58,20 +58,14 @@ except Exception as e:
     print(f"Error during conversion: {e}")
 # Convert the notebook.html to PDF
 
-def convert_html_to_pdf(html_content, pdf_path):
-    try:
-        pdfkit.from_string(html_content, pdf_path)
-        print(f"PDF generated and saved at {pdf_path}")
-    except Exception as e:
-        print(f"PDF generation failed: {e}")
-
-# PDF path to save
+# Generate PDF
 pdf_path = 'notebook.pdf'
 
-# Generate PDF
-with open("notebook.html", 'r') as f:
-    html_text = f.read()
-    convert_html_to_pdf(html_text, pdf_path)
+try:
+    pdfkit.from_file("notebook.html", pdf_path)
+    print(f"PDF generated and saved at {pdf_path}")
+except Exception as e:
+    print(f"PDF generation failed: {e}")
 
 # Clean up the intermediate HTML file
 try:
