@@ -405,6 +405,43 @@ void tarjan(int n){
 
 <div style="page-break-after: always;"></div>
 
+### UnionFind
+
+```cpp
+#define MAXN 10000
+
+int parent[MAXN];
+int w[MAXN];
+
+int find_set(int v)
+{
+    if (v == parent[v])
+        return v;
+    return parent[v] = find_set(parent[v]);
+}
+
+void make_set(int v)
+{
+    parent[v] = v;
+    w[v] = 1;
+}
+
+void union_sets(int a, int b)
+{
+    a = find_set(a);
+    b = find_set(b);
+    if (a != b)
+    {
+        if (w[a] < w[b])
+            swap(a, b);
+        parent[b] = a;
+        w[a] += w[b];
+    }
+}
+```
+
+<div style="page-break-after: always;"></div>
+
 ## Matematica
 
 ### Crammer
@@ -649,6 +686,51 @@ void solve(int n){
 
 ## Programacao-Dinamica
 
+### EditDistance
+
+```cpp
+
+int min(int a, int b, int c)
+{
+    if (a < b && a < c)
+        return a;
+    if (b < c)
+        return b;
+    return c;
+}
+
+int editDistance(string s1, string s2)
+{
+    int m = s1.size();
+    int n = s2.size();
+    int PD[m + 1][n + 1];
+    // Inicialização da primeira coluna (E(i, 0))
+    for (int i = 0; i <= m; i++)
+        PD[i][0] = i;
+    // Inicialização da primeira linha (E(0, j))
+    for (int j = 0; j <= n; j++)
+        PD[0][j] = j;
+    // Preenchendo a matriz dp
+    for (int i = 1; i <= m; i++)
+    {
+        for (int j = 1; j <= n; j++)
+        {
+            if (s1[i - 1] == s2[j - 1])
+            {
+                PD[i][j] = PD[i - 1][j - 1]; // Sem custo extra
+            }
+            else
+            {
+                PD[i][j] = 1 + min(PD[i - 1][j], PD[i][j - 1], PD[i - 1][j - 1]);
+            }
+        }
+    }
+    return PD[m][n]; // Resposta final
+}
+```
+
+<div style="page-break-after: always;"></div>
+
 ### Fenwick
 
 ```cpp
@@ -748,6 +830,41 @@ vector<int> escolhidos(int W, int n){
 
 <div style="page-break-after: always;"></div>
 
+### Lis-On-Tree
+
+```cpp
+
+#define MAXN 100100
+const int INF = 1e9;
+
+int a[MAXN];
+vector<int> tree[MAXN];
+int r[MAXN];
+int vis[MAXN];
+vector<int> dp(MAXN, INF);
+void dfs(int v)
+{
+    vis[v] = 1;
+    int l = upper_bound(dp.begin(), dp.end(), a[v]) - dp.begin(); // índice do primeiro elemento em dp maior que a[i]
+    int ant = dp[l];
+    if (dp[l - 1] < a[v] && a[v] < dp[l])
+    {
+        dp[l] = a[v];
+    }
+    for (auto u : tree[v])
+    {
+        if (!vis[u])
+        {
+            dfs(u);
+        }
+    }
+    r[v] = lower_bound(dp.begin(), dp.end(), INF) - dp.begin() - 1; // comprimento da LIS da raiz ao vértice v
+    dp[l] = ant;
+}
+```
+
+<div style="page-break-after: always;"></div>
+
 ### Lis
 
 ```cpp
@@ -785,6 +902,86 @@ int main(){
         v.push_back(aux);
     }
     cout<<LIS(v)<<endl;
+    return 0;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Segment-Tree-Lazy-Propagation
+
+```cpp
+// range query/update, soma
+const int maxn = 1000100;
+
+int vet[maxn], tree[4 * maxn], lz[4 * maxn];
+
+void build(int node, int l, int r)
+{
+    if (l == r)
+    {
+        tree[node] = vet[l];
+        return;
+    }
+    int mid = (l + r) / 2;
+    build(2 * node + 1, l, mid);
+    build(2 * node + 2, mid + 1, r);
+    tree[node] = tree[2 * node + 1] + tree[2 * node + 2];
+}
+
+void unlazy(int node, int tl, int tr)
+{
+    if (lz[node] == 0)
+        return;
+    tree[node] += (tr - tl + 1) * lz[node];
+    if (tl != tr)
+    {
+        lz[2 * node + 1] += lz[node];
+        lz[2 * node + 2] += lz[node];
+    }
+    lz[node] = 0;
+}
+
+void update(int node, int tl, int tr, int l, int r, int v)
+{
+    unlazy(node, tl, tr);
+    if (tl > r || tr < l)
+        return;
+    if (tl >= l && tr <= r)
+    {
+        lz[node] += v;
+        unlazy(node, tl, tr);
+        return;
+    }
+    int mid = (tl + tr) / 2;
+    update(2 * node + 1, tl, mid, l, r, v);
+    update(2 * node + 2, mid + 1, tr, l, r, v);
+    tree[node] = tree[2 * node + 1] + tree[2 * node + 2];
+}
+
+int query(int node, int tl, int tr, int l, int r)
+{
+    unlazy(node, tl, tr);
+    if (r < tl || l > tr)
+        return 0;
+    if (l <= tl && r >= tr)
+        return tree[node];
+    int mid = (tl + tr) / 2;
+    return query(2 * node + 1, tl, mid, l, r) +
+           query(2 * node + 2, mid + 1, tr, l, r);
+}
+
+int main()
+{
+    int n = 5; // tamanho do vetor
+    for (int i = 0; i < n; i++)
+        vet[i] = 0;
+    build(0, 0, n - 1);
+    // Incrementa 3 no intervalo [1, 3]
+    update(0, 0, n - 1, 1, 3, 3);
+    // Soma total do intervalo [0, 4] -> deve ser 9 (0+3+3+3+0)
+    cout << "Soma de [0, 4]: " << query(0, 0, n - 1, 0, 4) << '\n';
     return 0;
 }
 
