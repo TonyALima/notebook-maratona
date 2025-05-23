@@ -1016,7 +1016,7 @@ tree * build(int e, int d){
 
 int query(tree *arv, int e, int d){
     if (arv == NULL) return 1;
-    if (e <= arv->from && arv->to >= d) return arv->valor;
+    if (e <= arv->from && arv->to <= d) return arv->valor;
     if (e > arv->to) return 1; if (d < arv->from) return 1;
     return query(arv->esq, e, d)*query(arv->dir, e, d);
 }
