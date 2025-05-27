@@ -22,29 +22,29 @@ bool cw(pt a, pt b, pt c, bool include_collinear) {
 }
 bool collinear(pt a, pt b, pt c) { return orientation(a, b, c) == 0; }
 
-void convex_hull(vector<pair<pt,int>>& a, bool include_collinear = false) {
-    pair<pt,int> p0 = *min_element(a.begin(), a.end(), [](auto a, auto b) {
-        return make_pair(a.first.y, a.first.x) < make_pair(b.first.y, b.first.x);
+void convex_hull(vector<pt>& a, bool include_collinear = false) {
+    pt p0 = *min_element(a.begin(), a.end(), [](auto a, auto b) {
+        return make_pair(a.y, a.x) < make_pair(b.y, b.x);
     });
     sort(a.begin(), a.end(), [&p0](const auto& a, const auto& b) {
-        int o = orientation(p0.first, a.first, b.first);
+        int o = orientation(p0, a, b);
         if (o == 0)
-            return (p0.first.x-a.first.x)*(p0.first.x-a.first.x) + 
-                    (p0.first.y-a.first.y)*(p0.first.y-a.first.y)
-                    < (p0.first.x-b.first.x)*(p0.first.x-b.first.x) + 
-                    (p0.first.y-b.first.y)*(p0.first.y-b.first.y);
+            return (p0.x-a.x)*(p0.x-a.x) + 
+                    (p0.y-a.y)*(p0.y-a.y)
+                    < (p0.x-b.x)*(p0.x-b.x) + 
+                    (p0.y-b.y)*(p0.y-b.y);
         return o < 0;
     });
     if (include_collinear) {
         int i = (int)a.size()-1;
-        while (i >= 0 && collinear(p0.first, a[i].first, a.back().first)) i--;
+        while (i >= 0 && collinear(p0, a[i], a.back())) i--;
         reverse(a.begin()+i+1, a.end());
     }
 
-    vector<pair<pt,int>> st;
+    vector<pt> st;
     for (int i = 0; i < (int)a.size(); i++) {
         while (st.size() > 1 && 
-                !cw(st[st.size()-2].first, st.back().first, a[i].first, include_collinear))
+                !cw(st[st.size()-2], st.back(), a[i], include_collinear))
             st.pop_back();
         st.push_back(a[i]);
     }
@@ -53,26 +53,4 @@ void convex_hull(vector<pair<pt,int>>& a, bool include_collinear = false) {
         st.pop_back();
 
     a = st;
-}
-
-bool cmp(pair<pt,int> x,pair<pt,int> y){
-    return x.second<y.second;
-}
-
-int main(){
-    int n;
-    vector<pair<pt,int>> v;
-    cin>>n;
-    for(int i=1;i<=n;i++){
-        double x,y;
-        cin>>x>>y;
-        pt a;
-        a.x=x;a.y=y;
-        v.push_back(make_pair(a,i));
-    }
-    convex_hull(v,true);
-    sort(v.begin(),v.end(),cmp);
-    cout<<v[0].second;
-    for(int i=1;i<v.size();i++) cout<<" "<<v[i].second;
-    cout<<endl;
 }
