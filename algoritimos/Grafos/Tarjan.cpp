@@ -1,11 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
+#define NMAX 100
 // componente fortemente conexo
-
-vector<int> adj[];
+vector<int> adj[NMAX];
 stack<int> s;
-int c, t, dis[], low[], ins[];
-set<int> comp[]; set<int>::iterator sit;
+int c, t, dis[NMAX], low[NMAX], ins[NMAX];
+set<int> comp[NMAX]; set<int>::iterator sit;
+// c eh o numero de componentes e comp[] contem cada componente
 
 void DFS(int u){
     dis[u] = low[u] = t++;
@@ -24,6 +25,7 @@ void DFS(int u){
         }
         w = s.top();
         comp[c].insert(w); ins[w] = 0; s.pop();
+        c++;
     } 
 }
 
