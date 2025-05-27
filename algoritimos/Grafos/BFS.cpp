@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-
+//O(n^2) se mudar para lista de adjacencia vira O(n+a) sendo a o numero de arestas
 int mat[][];
 int vis[], anterior[];
 
