@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 // range query multiplicacao
-
+//O(nlogn)
 int vet[];
 struct tree{
     tree *esq, *dir;
