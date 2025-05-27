@@ -1003,8 +1003,8 @@ int main(){
 
 ```cpp
 // range query/update, soma
+//O(n)
 const int maxn = 1000100;
-
 int vet[maxn], tree[4 * maxn], lz[4 * maxn];
 
 void build(int node, int l, int r)
@@ -1083,7 +1083,7 @@ int main()
 
 ```cpp
 // range query multiplicacao
-
+//O(nlogn)
 int vet[];
 struct tree{
     tree *esq, *dir;
