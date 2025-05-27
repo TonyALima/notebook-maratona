@@ -2,6 +2,7 @@
 using namespace std;
 //Usa BFS
 //Necessario fonte e sumidouro
+//O(ve^2) sendo v=vertices e=arestas
 int rgrafo[][]; // alterar BFS para usar grafo residual.
 int fluxoMaximo(int ini, int fim, int tam){
     int u, v;
