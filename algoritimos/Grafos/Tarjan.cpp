@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define NMAX 100
+//O(v+e)
 // componente fortemente conexo
 vector<int> adj[NMAX];
 stack<int> s;
