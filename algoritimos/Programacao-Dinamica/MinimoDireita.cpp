@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-
+//O(n)
 long long int vet[412345];
 int mem[412345];
 void dp(int n){
