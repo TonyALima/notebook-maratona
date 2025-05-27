@@ -255,6 +255,7 @@ void dijkstra(int s){
 ```cpp
 //Usa BFS
 //Necessario fonte e sumidouro
+//O(ve^2) sendo v=vertices e=arestas
 int rgrafo[][]; // alterar BFS para usar grafo residual.
 int fluxoMaximo(int ini, int fim, int tam){
     int u, v;
@@ -286,7 +287,7 @@ int fluxoMaximo(int ini, int fim, int tam){
 
 ```cpp
 // Deteccao de ciclo negativo e caminho minimo para qualquer u, v
-
+//O(n^3)
 int m[][], custo[][];
 
 bool floydWarshall(int n){
@@ -320,7 +321,7 @@ bool floydWarshall(int n){
 ```cpp
 // arvore geradora minima
 // usa union find
-
+//O(elogv)
 int mat[][];
 int pai[], rnk[];
 
@@ -359,6 +360,7 @@ int kruskall(int tam){
 
 ```cpp
 #define NMAX 100
+//O(v+e)
 // componente fortemente conexo
 vector<int> adj[NMAX];
 stack<int> s;
