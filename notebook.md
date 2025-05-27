@@ -819,7 +819,7 @@ int queryBIT(int index){
 
 ```cpp
 // Encher a mochila com maior valor
-
+//O(n*W)
 int peso[], valor[];
 
 // com repeticao
@@ -876,6 +876,7 @@ vector<int> escolhidos(int W, int n){
     }
     return itens;
 }
+
 ```
 
 <div style="page-break-after: always;"></div>
@@ -883,7 +884,7 @@ vector<int> escolhidos(int W, int n){
 ### Lis-On-Tree
 
 ```cpp
-
+//O(nlogn)
 #define MAXN 100100
 const int INF = 1e9;
 
@@ -911,6 +912,7 @@ void dfs(int v)
     r[v] = lower_bound(dp.begin(), dp.end(), INF) - dp.begin() - 1; // comprimento da LIS da raiz ao vértice v
     dp[l] = ant;
 }
+
 ```
 
 <div style="page-break-after: always;"></div>
@@ -962,7 +964,7 @@ int main(){
 ### MinimoDireita
 
 ```cpp
-
+//O(n)
 long long int vet[412345];
 int mem[412345];
 void dp(int n){
