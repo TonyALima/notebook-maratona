@@ -126,7 +126,7 @@ bool doIntersect(Ponto p1, Ponto p2, Ponto p3, Ponto p4) {
 ### BFS
 
 ```cpp
-
+//O(n^2) se mudar para lista de adjacencia vira O(n+a) sendo a o numero de arestas
 int mat[][];
 int vis[], anterior[];
 
@@ -157,7 +157,7 @@ int BFS(int ini, int fim, int tam){ // 1 se tiver caminho, 0 caso nao
 #define INF 0x3F3F3F3F
 #define NMAX 100
 // Caminho minimo com aresta negativa, caminho percorrido
-
+//O(n^3)
 int m[NMAX][NMAX], custo[NMAX], anterior[NMAX];
 
 // Retorna true se existir ciclo negativo
