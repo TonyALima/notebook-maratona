@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 // Menor caminho
-
+//O(e+nlogn) sendo e=arestas
 typedef pair<int, int> ii;
 typedef vector<ii> vii;
 typedef vector<int> vi;
