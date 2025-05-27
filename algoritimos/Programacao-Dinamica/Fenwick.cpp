@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 // range query soma
-
+//O(logn)
 int BIT[];
 
 void updateBIT(int tam, int index, int valor){
