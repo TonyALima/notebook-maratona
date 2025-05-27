@@ -405,7 +405,7 @@ void tarjan(int n){
 
 ```cpp
 #define MAXN 10000
-
+//O(1) ná media, pior caso O(logn)
 int parent[MAXN];
 int w[MAXN];
 
@@ -434,6 +434,7 @@ void union_sets(int a, int b)
         w[a] += w[b];
     }
 }
+
 ```
 
 <div style="page-break-after: always;"></div>
@@ -737,7 +738,7 @@ void solve(int n){
 ### EditDistance
 
 ```cpp
-
+//O(n*m)
 int min(int a, int b, int c)
 {
     if (a < b && a < c)
@@ -775,6 +776,7 @@ int editDistance(string s1, string s2)
     }
     return PD[m][n]; // Resposta final
 }
+
 ```
 
 <div style="page-break-after: always;"></div>
@@ -783,7 +785,7 @@ int editDistance(string s1, string s2)
 
 ```cpp
 // range query soma
-
+//O(logn)
 int BIT[];
 
 void updateBIT(int tam, int index, int valor){
