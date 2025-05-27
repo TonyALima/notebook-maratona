@@ -24,6 +24,10 @@ get<i>(t);
 #define BitTest(var, bit) var & (1 << bit)
 #define BitSet(var, bit) var |= (1 << bit)
 #define BitClear(var, bit) var &= ~(1 << bit)
+#define BitFlip(var,bit) var ^= (1<<bit)
+
+// Maximo divisor comum (GCD) O(log10(min(a, b))
+std::gcd(a, b);
 
 ```
 
