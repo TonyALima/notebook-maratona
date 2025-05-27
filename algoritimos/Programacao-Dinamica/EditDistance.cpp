@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-
+//O(n*m)
 int min(int a, int b, int c)
 {
     if (a < b && a < c)
