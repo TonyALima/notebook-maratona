@@ -172,11 +172,14 @@ int BFS(int ini, int fim, int tam){ // 1 se tiver caminho, 0 caso nao
 ### Bellman-Ford
 
 ```cpp
+#define INF 0x3F3F3F3F
+#define NMAX 100
 // Caminho minimo com aresta negativa, caminho percorrido
 
-int m[][], custo[], anterior[];
+int m[NMAX][NMAX], custo[NMAX], anterior[NMAX];
 
-void bellmanFord(int s, int n){
+// Retorna true se existir ciclo negativo
+bool bellmanFord(int s, int n){
     int i, j, k;
     for (i = 0; i < n; i++){
         custo[i] = INF;
@@ -187,10 +190,17 @@ void bellmanFord(int s, int n){
     for (k = 0; k < n; k++)
         for (i = 0; i < n; i++)
             for (j = 0; j < n; j++)
-                if (k != j && m[j][k] != 0 && custo[k] > custo[j]+m[j][k]){
-                    custo[k] = custo[j]+m[j][k];
-                    anterior[k] = j;
+                if (m[i][j] != 0 && custo[i] != INF && custo[j] > custo[i] + m[i][j]) {
+                    custo[j] = custo[i] + m[i][j];
+                    anterior[j] = i;
                 }
+
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            if (m[i][j] != 0 && custo[i] != INF && custo[j] > custo[i] + m[i][j])
+                return true; // Ciclo negativo
+    
+    return false;
 }
 
 ```
@@ -366,12 +376,13 @@ int kruskall(int tam){
 ### Tarjan
 
 ```cpp
+#define NMAX 100
 // componente fortemente conexo
-
-vector<int> adj[];
+vector<int> adj[NMAX];
 stack<int> s;
-int c, t, dis[], low[], ins[];
-set<int> comp[]; set<int>::iterator sit;
+int c, t, dis[NMAX], low[NMAX], ins[NMAX];
+set<int> comp[NMAX]; set<int>::iterator sit;
+// c eh o numero de componentes e comp[] contem cada componente
 
 void DFS(int u){
     dis[u] = low[u] = t++;
@@ -390,6 +401,7 @@ void DFS(int u){
         }
         w = s.top();
         comp[c].insert(w); ins[w] = 0; s.pop();
+        c++;
     } 
 }
 
