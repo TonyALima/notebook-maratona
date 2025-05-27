@@ -1,7 +1,7 @@
-
-
+#include <bits/stdc++.h>
+using namespace std;
 //Potenciação rapida
-
+//O(logn) n sendo power
 long long fast_power(long long base, long long power) {
     long long result = 1;
     while(power > 0) {
