@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-
+//O(n*m)
 // numero minimo de operacoes para transformar uma string em outra.
 int levenshtein(const string& a, const string& b) {
     int m = a.size(), n = b.size();
