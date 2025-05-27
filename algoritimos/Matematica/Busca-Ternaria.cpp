@@ -2,8 +2,8 @@
 using namespace std;
 
 const double EPS = 1e-6;
-
 // Busca ternária para encontrar o ponto de máximo (ou mínimo, dependendo da função)
+//O(logn) n = tamanho de busca
 double ternary_search(std::function<double(double)> f, double left, double right) {
     while (right - left > EPS) {
         double m1 = left + (right - left) / 3.0;
