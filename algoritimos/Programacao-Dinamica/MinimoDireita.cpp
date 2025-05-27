@@ -4,18 +4,12 @@ using namespace std;
 long long int vet[412345];
 int mem[412345];
 void dp(int n){
-    stack<pair<long long int,int>> s;
+    stack<int> s;
     for(int i=n-1;i>=0;i--){
-        if(s.empty()){
-            mem[i]=-1;
-            s.push({vet[i],i});
-        }
-        else{
-            while(!s.empty()&&vet[i]<=s.top().first) s.pop();
-            if(s.empty()) mem[i]=-1;
-            else mem[i]=s.top().second;
-            s.push({vet[i],i});
-        }
+        while(!s.empty()&&vet[i]<=vet[s.top()]) s.pop();
+        if(s.empty()) mem[i]=-1;
+        else mem[i]=s.top();
+        s.push(i);
     }
 }
 
