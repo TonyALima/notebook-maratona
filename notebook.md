@@ -220,7 +220,7 @@ int DFS(int v, int tam){
 
 ```cpp
 // Menor caminho
-
+//O(e+nlogn) sendo e=arestas
 typedef pair<int, int> ii;
 typedef vector<ii> vii;
 typedef vector<int> vi;
