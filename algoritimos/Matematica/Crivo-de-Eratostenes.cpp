@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 // Cria um vetor de fatores primos / todos os primos ate N
-
+//O(n)
 int fprimos[]; // inicializa com 0
 
 void crivo(int n){
