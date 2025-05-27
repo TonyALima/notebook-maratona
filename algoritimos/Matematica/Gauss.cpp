@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define NMAX 20
-
+//O(n^3)
 // matriz ampliada de coeficientes
 double mat[NMAX][NMAX+1];
 double sol[NMAX];
