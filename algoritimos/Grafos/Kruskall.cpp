@@ -2,7 +2,7 @@
 using namespace std;
 // arvore geradora minima
 // usa union find
-
+//O(elogv)
 int mat[][];
 int pai[], rnk[];
 
