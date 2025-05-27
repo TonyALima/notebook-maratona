@@ -1160,6 +1160,7 @@ int levenshtein(const string& a, const string& b) {
 ### Trie
 
 ```cpp
+//O(W*l) sendo W=numero de palavra l=tamanho da palavra
 //Cria um dicionario de prefixos
 const int K = 26;
 struct Vertex {
