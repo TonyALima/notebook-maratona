@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 // Deteccao de ciclo negativo e caminho minimo para qualquer u, v
-
+//O(n^3)
 int m[][], custo[][];
 
 bool floydWarshall(int n){
