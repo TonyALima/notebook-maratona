@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 // Encher a mochila com maior valor
-
+//O(n*W)
 int peso[], valor[];
 
 // com repeticao
