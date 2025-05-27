@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define MAXN 10000
-
+//O(1) ná media, pior caso O(logn)
 int parent[MAXN];
 int w[MAXN];
 
