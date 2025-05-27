@@ -3,7 +3,7 @@ using namespace std;
 #define INF 0x3F3F3F3F
 #define NMAX 100
 // Caminho minimo com aresta negativa, caminho percorrido
-
+//O(n^3)
 int m[NMAX][NMAX], custo[NMAX], anterior[NMAX];
 
 // Retorna true se existir ciclo negativo
