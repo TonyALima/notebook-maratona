@@ -29,6 +29,9 @@ get<i>(t);
 // Maximo divisor comum (GCD) O(log10(min(a, b))
 std::gcd(a, b);
 
+//Ler linha com espaço
+scanf("%[^\n]s", str);
+
 ```
 
 <div style="page-break-after: always;"></div>
