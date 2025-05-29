@@ -30,7 +30,13 @@ get<i>(t);
 std::gcd(a, b);
 
 //Ler linha com espaço
-scanf("%[^\n]s", str);
+char str[500];
+scanf("%[^\n]", str);
+string s(str);
+printf("%s",s.c_str());
+
+//Transformar iterator em indice
+distance(v.begin(),it);
 
 ```
 
