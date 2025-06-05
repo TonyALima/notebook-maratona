@@ -2,20 +2,19 @@
 using namespace std;
 // deteccao de ciclos
 
-int mat[][];
-int vis[], rec[]; // inicializa com 0
+int cnt=0;
+int in[N],out[N],depth[N];//inicializa in e out com -1
+vector<int> adj[N];
 
-int DFS(int v, int tam){
-    if(!vis[v]){
-        vis[v] = 1;
-        rec[v] = 1;
-        for (int i = 0; i < tam; i++){
-            if (mat[v][i]){
-                if(!vis[i] && DFS(i, tam)) return 1;
-                else if(rec[i]) return 1;
-            }
-        }
+
+int DFS(int v,int nivel){
+    int res=0;
+    in[v]=cnt++;
+    depth[v]=nivel;
+    for(int i=0;i<adj[v].size();i++){
+        if(in[adj[v][i]]!=-1&&out[adj[v][i]]==-1) res=1;
+        if(DFS(adj[v][i],nivel+1)) res=1;
     }
-    rec[v] = 0;
-    return 0;
+    out[v]=cnt++;
+    return res;
 }
