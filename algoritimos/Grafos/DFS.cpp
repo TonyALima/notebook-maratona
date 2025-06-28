@@ -1,21 +1,23 @@
 #include <bits/stdc++.h>
 using namespace std;
-// deteccao de ciclos
+// deteccao de ciclos, tempo de entrada e saida, nivel caso seja arvore
 
-int mat[][];
-int vis[], rec[]; // inicializa com 0
+const int N=11;
 
-int DFS(int v, int tam){
-    if(!vis[v]){
-        vis[v] = 1;
-        rec[v] = 1;
-        for (int i = 0; i < tam; i++){
-            if (mat[v][i]){
-                if(!vis[i] && DFS(i, tam)) return 1;
-                else if(rec[i]) return 1;
-            }
+int cnt=1;
+int in[N],out[N],depth[N];//inicializa in e out com 0
+vector<int> adj[N];
+
+
+int DFS(int v,int nivel){
+    in[v]=cnt++;
+    depth[v]=nivel;
+    for(int i=0;i<adj[v].size();i++){
+        if(in[adj[v][i]]&&!out[adj[v][i]]) return 1;
+        if(!in[adj[v][i]]){
+            if(DFS(adj[v][i],nivel+1)) return 1;
         }
     }
-    rec[v] = 0;
+    out[v]=cnt++;
     return 0;
 }

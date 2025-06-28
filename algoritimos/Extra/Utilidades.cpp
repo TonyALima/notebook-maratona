@@ -24,3 +24,12 @@ get<i>(t);
 
 // Maximo divisor comum (GCD) O(log10(min(a, b))
 std::gcd(a, b);
+
+//Ler linha com espaço
+char str[500];
+scanf("%[^\n]", str);
+string s(str);
+printf("%s",s.c_str());
+
+//Transformar iterator em indice
+distance(v.begin(),it);

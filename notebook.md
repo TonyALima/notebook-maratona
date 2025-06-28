@@ -29,6 +29,15 @@ get<i>(t);
 // Maximo divisor comum (GCD) O(log10(min(a, b))
 std::gcd(a, b);
 
+//Ler linha com espaço
+char str[500];
+scanf("%[^\n]", str);
+string s(str);
+printf("%s",s.c_str());
+
+//Transformar iterator em indice
+distance(v.begin(),it);
+
 ```
 
 <div style="page-break-after: always;"></div>
@@ -192,23 +201,25 @@ bool bellmanFord(int s, int n){
 ### DFS
 
 ```cpp
-// deteccao de ciclos
+// deteccao de ciclos, tempo de entrada e saida, nivel caso seja arvore
 
-int mat[][];
-int vis[], rec[]; // inicializa com 0
+const int N=11;
 
-int DFS(int v, int tam){
-    if(!vis[v]){
-        vis[v] = 1;
-        rec[v] = 1;
-        for (int i = 0; i < tam; i++){
-            if (mat[v][i]){
-                if(!vis[i] && DFS(i, tam)) return 1;
-                else if(rec[i]) return 1;
-            }
+int cnt=1;
+int in[N],out[N],depth[N];//inicializa in e out com 0
+vector<int> adj[N];
+
+
+int DFS(int v,int nivel){
+    in[v]=cnt++;
+    depth[v]=nivel;
+    for(int i=0;i<adj[v].size();i++){
+        if(in[adj[v][i]]&&!out[adj[v][i]]) return 1;
+        if(!in[adj[v][i]]){
+            if(DFS(adj[v][i],nivel+1)) return 1;
         }
     }
-    rec[v] = 0;
+    out[v]=cnt++;
     return 0;
 }
 
@@ -352,6 +363,111 @@ int kruskall(int tam){
     return res;
 }
 
+```
+
+<div style="page-break-after: always;"></div>
+
+### Least-Common-Ancestor
+
+```cpp
+
+const int N=212345;
+const int LN=20;
+int depth[N],memo[LN][N];
+vector<int> filhos[N];
+//O(nlogn)
+void dfs(int s){
+    for(int i=0;i<filhos[s].size();i++){
+        int f=filhos[s][i];
+        if(memo[0][s]==f) continue;
+        depth[f]=depth[s]+1;
+        memo[0][f]=s;
+        dfs(f);
+    }
+}
+void compute(int n){
+    for(int passos=1;passos<LN;passos++){
+        for(int i=0;i<n;i++){
+            memo[passos][i]=memo[passos-1][memo[passos-1][i]];
+        }
+    }
+}
+int walk(int s,int dis){
+    int jump=0;
+    while (dis){
+        if(dis&1) s=memo[jump][s];
+        jump++;
+        dis>>=1;
+    }
+    return s;
+}
+int lca(int x,int y){
+    if(depth[x]<depth[y]) swap(x,y);
+    x=walk(x,depth[x]-depth[y]);
+    if(x==y) return x;
+    for(int k=LN-1;k>=0;k--){
+        if(memo[k][x]!=memo[k][y]){
+            x=memo[k][x];
+            y=memo[k][y];
+        }
+    }
+    return memo[0][x];
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### PrimDenso
+
+```cpp
+// árvore geradora mínima otimizada para grafos densos
+// muito eficiente para a árvore geradora mínima dadas as posições cartesianas dos v vértices
+// O(v²)
+int n;
+vector<vector<double>> adj; // MATRIZ de adjacência do grafo (nxn)
+const double INF = 1000000000.0;
+
+struct Edge
+{
+    double w = INF;
+    int to = -1;
+};
+
+double prim()
+{
+    double total_weight = 0;
+    vector<bool> selected(n, false);
+    vector<Edge> min_e(n);
+    min_e[0].w = 0;
+
+    for (int i = 0; i < n; ++i)
+    {
+        int v = -1;
+        for (int j = 0; j < n; ++j)
+        {
+            if (!selected[j] && (v == -1 || min_e[j].w < min_e[v].w))
+                v = j;
+        }
+
+        /*if (min_e[v].w == INF) {
+            cout << "No MST!" << endl;
+            exit(0);
+        }*/
+        selected[v] = true;
+        total_weight += min_e[v].w;
+        /*if (min_e[v].to != -1)
+            cout << v << " " << min_e[v].to << endl;*/
+
+        for (int to = 0; to < n; ++to)
+        {
+            if (adj[v][to] < min_e[to].w)
+                min_e[to] = {adj[v][to], v};
+        }
+    }
+
+    return total_weight;
+}
 ```
 
 <div style="page-break-after: always;"></div>
@@ -1117,6 +1233,28 @@ int update(tree *arv, int i, int valor){
     if (arv->from == arv->to && arv->from == i) arv->valor = valor;
     else arv->valor = (update(arv->esq, i, valor)*update(arv->dir, i, valor));
     return arv->valor;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Sum-Array-2D
+
+```cpp
+//Cria uma matriz de soma, para verificar a soma num quadrado usar a funcao soma, pode ser modificado para retangulo
+//O(n^2)
+const int N=1123;
+int prefix[N][N],vet[N][N];
+void monta(int n,int m){
+  memset(prefix,0,sizeof(prefix));
+  for(int i=1;i<=n;i++){
+    for(int j=1;j<=m;j++) prefix[i][j]=prefix[i-1][j]+prefix[i][j-1]-prefix[i-1][j-1]+vet[i-1][j-1];
+  }
+}
+
+int soma(int x,int y,int lado){
+  return prefix[x+lado][y+lado]-prefix[x+lado][y-1]-prefix[x-1][y+lado]+prefix[x-1][y-1];
 }
 
 ```
