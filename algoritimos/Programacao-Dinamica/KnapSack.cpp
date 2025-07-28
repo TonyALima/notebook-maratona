@@ -8,7 +8,7 @@ int peso[], valor[];
 int knapSack(int W, int n){
     int memo[W+1];
     memset(memo, 0, sizeof(memo));
-    for (int w = 0; w < W; w++){
+    for (int w = 0; w <= W; w++){
         for (int i = 0; i < n; i++){
             if (peso[i] <= w)
                 memo[w] = max(memo[w], memo[w-peso[i]] + valor[i]);
