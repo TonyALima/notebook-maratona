@@ -34,12 +34,16 @@ class Vetor{
         if((q-p)*(r-p)<=0||(p-q)*(r-q)<=0) return min(~(r-p),~(r-q));
         else return abs(((r-p)^(q-p))/(~(q-p)));
     }
-    bool operator==(Vetor p){
+    bool operator==(const Vetor p)const {
         return fabs(this->x - p.x) < EPS && fabs(this->y - p.y) < EPS;
     }
-    bool operator!=(Vetor p){
+    bool operator!=(const Vetor p)const {
         if(*this==p) return false;
         return true;
+    }
+    bool operator<(const Vetor p)const {
+        if(this->x!=p.x) return this->x<p.x;
+        return this->y<p.y;
     }
     static Vetor pivot; 
 
@@ -86,8 +90,8 @@ class Reta{//Caso seja passado pontos para descobrir a reta, resolver o sistema
     double dist(Vetor p){
         return (this->posicao(p))/(~(~(*this)));
     }
-    bool operator&&(Reta r){//Returna  true se for paralelo
-        return (fabs(this->a*l.b - this->b*l.a) < EPS);
+    bool operator&&(const Reta r)const {//Returna  true se for paralelo
+        return (fabs(this->a*r.b - this->b*r.a) < EPS);
     }
     bool operator==(const Reta& l) const {
         return fabs(this->a*l.b - this->b*l.a) < EPS &&
@@ -132,7 +136,7 @@ bool intersect(Vetor a, Vetor b, Vetor c, Vetor d) {//segmento ab e cd intersect
     return false;
 }
 
-double area(vector<Vetor>& poly){//Precisa estar ordenado no sentido horario ou contrario
+double area(vector<Vetor>& poly){//Precisa estar ordenado no sentido horario ou contrario e ser convexo
     double s=0;
     int n=poly.size();
     for(int i=0;i<n;i++)
