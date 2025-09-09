@@ -1,6 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+//Entrada rapida no cin
+ios::sync_with_stdio(false);
+cin.tie(nullptr);
+
 // Precisao 2 casas decimais de float para impressao
 cout << fixed << setprecision(2);
 
