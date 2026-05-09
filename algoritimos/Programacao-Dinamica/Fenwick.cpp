@@ -2,7 +2,8 @@
 using namespace std;
 // range query soma
 //O(logn)
-int BIT[];
+#define NMAX 1000
+int BIT[NMAX];
 
 void updateBIT(int tam, int index, int valor){
     index++;
@@ -15,7 +16,7 @@ void updateBIT(int tam, int index, int valor){
 void buildBIT(int  *vet, int tam){
     int i;
     memset(BIT, 0, sizeof(BIT));
-    for (i == 0; i < tam; i++) updateBIT(tam, i, vet[i]);
+    for (i = 0; i < tam; i++) updateBIT(tam, i, vet[i]);
 }
 
 int queryBIT(int index){

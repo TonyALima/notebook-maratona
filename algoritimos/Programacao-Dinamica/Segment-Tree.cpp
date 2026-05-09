@@ -2,7 +2,8 @@
 using namespace std;
 // range query multiplicacao
 //O(nlogn)
-int vet[];
+const int N=1123;
+int vet[N];
 struct tree{
     tree *esq, *dir;
     int from, to, valor;

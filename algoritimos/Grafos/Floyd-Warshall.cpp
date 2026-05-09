@@ -2,7 +2,9 @@
 using namespace std;
 // Deteccao de ciclo negativo e caminho minimo para qualquer u, v
 //O(n^3)
-int m[][], custo[][];
+#define NMAX 1000
+#define INF 0x3f3f3f3f
+int m[NMAX][NMAX], custo[NMAX][NMAX];
 
 bool floydWarshall(int n){
     int i, j, k;
@@ -20,7 +22,7 @@ bool floydWarshall(int n){
                     custo[i][j] > custo[i][k] + custo[k][j])
                     custo[i][j] = custo[i][k] + custo[k][j];
             }
-            if (custo[j][j]< 0)
+            if (custo[i][i]< 0)
                 return true;
         }
     return false;

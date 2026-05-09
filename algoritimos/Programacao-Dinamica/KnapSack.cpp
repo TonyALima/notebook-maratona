@@ -2,10 +2,11 @@
 using namespace std;
 // Encher a mochila com maior valor
 //O(n*W)
-int peso[], valor[];
+#define NMAX 1000
+int peso[NMAX], valor[NMAX];
 
 // com repeticao
-int knapSack(int W, int n){
+int knapSackRep(int W, int n){
     int memo[W+1];
     memset(memo, 0, sizeof(memo));
     for (int w = 0; w <= W; w++){
@@ -29,11 +30,10 @@ int knapSack(int W, int n){
     return memo[W];
 }
 
-// versao com matriz.
+// versao com matriz. Permite reconstruir os itens escolhidos.
+int mat[NMAX][NMAX];
 
-int mat[][];
-
-int knapSack(int W, int n) {
+int knapSackMat(int W, int n) {
     for (int i = 1; i <= n; ++i) {
         for (int w = 0; w <= W; ++w) {
             if (peso[i-1] <= w) {

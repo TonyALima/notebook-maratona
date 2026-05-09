@@ -6,10 +6,13 @@ const int N=11;
 
 int cnt=1;
 int in[N],out[N],depth[N];//inicializa in e out com 0
+int dis[N],low[N];
 vector<int> adj[N];
+set<int> artPoints;
+set<pair<int,int>> bridges;
 
 
-int DFS(int v,int nivel){
+int DFS(int v,int nivel){//DFS com tempo de in e out, detecta ciclo e permite dizer se vertice faz parte da subarvore do outro
     in[v]=cnt++;
     depth[v]=nivel;
     for(int i=0;i<adj[v].size();i++){
@@ -20,4 +23,24 @@ int DFS(int v,int nivel){
     }
     out[v]=cnt++;
     return 0;
+}
+
+void dfs(int v,int par){//dfs com lowlink e dis para deteccao de pontes e pontos de articulacao
+    bool parentEdge=false;
+    int children=0;
+    dis[v] = low[v] = cnt++;
+    for(auto i:adj[v]){
+        if(i==par&&!parentEdge){
+            parentEdge=true;
+            continue;
+        }
+        if(!dis[i]){
+            children++;
+            dfs(i,v);
+            low[v] = min(low[v], low[i]);
+            if (par!=-1 && low[i] >= dis[v]) artPoints.insert(v);
+            if (low[i] > dis[v]) bridges.insert({min(v,i),max(v,i)});
+        }else low[v] = min(low[v], dis[i]);
+    }
+    if (par==-1 && children>1) artPoints.insert(v);
 }

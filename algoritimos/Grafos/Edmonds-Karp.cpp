@@ -17,7 +17,7 @@ void addEdge(int a,int b,int c){
     g[a].push_back(edges.size());
     edges.push_back(Edge{b,c});
     g[b].push_back(edges.size());
-    edges.push_back(Edge{a,c});
+    edges.push_back(Edge{a,c}); // Para arestas direcionadas use capacidade 0 na aresta reversa
 }
 //Roda BFS para pegar o caminho
 int BFS(int ini, int fim){ // 1 se tiver caminho, 0 caso nao

@@ -6,7 +6,8 @@ using namespace std;
 double A[20][20],b[20],X[20];
 //Calcula o determinante sem comprometer a matriz O(n^3)
 double det(int n){
-    double mat[n][n],res=1;
+    vector<vector<double>> mat(n, vector<double>(n));
+    double res=1;
     int mxI;
     for(int i=0;i<n;i++)
         for(int j=0;j<n;j++) mat[i][j]=A[i][j];
@@ -35,7 +36,7 @@ double det(int n){
 
 void solver(int n){
     double d=det(n);
-    double aux[n];
+    vector<double> aux(n);
     //if(abs(d)<1e-12) return;//determinante = 0
     for(int i=0;i<n;i++){
         for(int j=0;j<n;j++){

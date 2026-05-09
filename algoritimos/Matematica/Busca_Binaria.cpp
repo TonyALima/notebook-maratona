@@ -10,7 +10,7 @@ int bb(int n){//Busca Binaria que procura um valor que compra os requisitos da f
     int res=-1;
     while(lmin<=lmax){
         int mid=(lmin+lmax)/2;
-        if(testa(n,mid)){
+        if(test(n,mid)){
             res=mid;
             lmin=mid+1;
         }

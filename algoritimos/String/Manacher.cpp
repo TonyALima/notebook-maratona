@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 //Funcao para Palindromos
-const int S=111;//Tamanho maximo da palavra
+const int S=200010;//Tamanho maximo da palavra
 
 int odd[S];//Guarda o maior tamanho de palindromo centrado na posicao i, tamanho = 2*odd[i]-1
 int even[S];//Guarda o maior tamanho de palindromo centrado nas posicoes i e i-1, tamanho = 2*even[i]

@@ -6,13 +6,13 @@ const int LN=20;
 int depth[N],memo[LN][N];
 vector<int> filhos[N];
 //O(nlogn)
-void dfs(int s){
+void dfs(int s, int par){
+    memo[0][s]=par;
     for(int i=0;i<filhos[s].size();i++){
         int f=filhos[s][i];
-        if(memo[0][s]==f) continue;
+        if(f==par) continue;
         depth[f]=depth[s]+1;
-        memo[0][f]=s;
-        dfs(f);
+        dfs(f,s);
     }
 }
 void compute(int n){

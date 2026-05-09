@@ -6,7 +6,7 @@ using namespace std;
 vector<int> adj[NMAX];
 stack<int> s;
 int c, t, dis[NMAX], low[NMAX], ins[NMAX];
-set<int> comp[NMAX]; set<int>::iterator sit;
+vector<int> comp[NMAX];
 // c eh o numero de componentes e comp[] contem cada componente
 
 void DFS(int u){
@@ -22,10 +22,10 @@ void DFS(int u){
         int w = 0;
         while (s.top() != u){
             w = s.top();
-            comp[c].insert(w); ins[w] = 0; s.pop();
+            comp[c].push_back(w); ins[w] = 0; s.pop();
         }
         w = s.top();
-        comp[c].insert(w); ins[w] = 0; s.pop();
+        comp[c].push_back(w); ins[w] = 0; s.pop();
         c++;
     } 
 }

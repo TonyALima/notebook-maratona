@@ -2,11 +2,13 @@
 using namespace std;
 // Menor caminho
 //O(e+nlogn) sendo e=arestas
+#define SIZE 1000
+#define INF 0x3f3f3f3f
 typedef pair<int, int> ii;
 typedef vector<ii> vii;
 typedef vector<int> vi;
 
-vii adj[];
+vii adj[SIZE];
 vi custo(SIZE, INF);
 
 void dijkstra(int s){
