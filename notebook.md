@@ -279,23 +279,23 @@ int main(){
 ### BFS
 
 ```cpp
-//O(n^2) se mudar para lista de adjacencia vira O(n+a) sendo a o numero de arestas
-int mat[][];
-int vis[], anterior[];
+//O(n+a) sendo a o numero de arestas
+#define NMAX 1000
+vector<int> adj[NMAX];
+int vis[NMAX], anterior[NMAX];
 
 int BFS(int ini, int fim, int tam){ // 1 se tiver caminho, 0 caso nao
-    int i;
     queue<int> fila;
-    for (i = 0; i < tam; i++){ vis[i] = 0; }
+    for (int i = 0; i < tam; i++) vis[i] = 0;
     fila.push(ini); vis[ini] = 1; anterior[ini] = -1;
     while (!fila.empty()){
-        for (i = 0; i < tam; i++){
-            if (!vis[i] && mat[fila.front()][i]){
-                if (i == fim) {anterior[i] = fila.front(); return 1;}
-                fila.push(i); anterior[i] = fila.front(); vis[i] = 1;
+        int u = fila.front(); fila.pop();
+        for (int v : adj[u]){
+            if (!vis[v]){
+                if (v == fim){ anterior[v] = u; return 1; }
+                fila.push(v); anterior[v] = u; vis[v] = 1;
             }
         }
-        fila.pop();
     }
     return 0;
 }
@@ -309,32 +309,31 @@ int BFS(int ini, int fim, int tam){ // 1 se tiver caminho, 0 caso nao
 ```cpp
 #define INF 0x3F3F3F3F
 #define NMAX 100
-// Caminho minimo com aresta negativa, caminho percorrido
-//O(n^3)
-int m[NMAX][NMAX], custo[NMAX], anterior[NMAX];
+// Caminho minimo com aresta negativa
+// O(V*E)
+struct Edge { int u, v, w; };
+vector<Edge> edges;
+int custo[NMAX], anterior[NMAX];
 
 // Retorna true se existir ciclo negativo
 bool bellmanFord(int s, int n){
-    int i, j, k;
-    for (i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){
         custo[i] = INF;
         anterior[i] = -1;
     }
     custo[s] = 0;
 
-    for (k = 0; k < n; k++)
-        for (i = 0; i < n; i++)
-            for (j = 0; j < n; j++)
-                if (m[i][j] != 0 && custo[i] != INF && custo[j] > custo[i] + m[i][j]) {
-                    custo[j] = custo[i] + m[i][j];
-                    anterior[j] = i;
-                }
+    for (int k = 0; k < n - 1; k++)
+        for (auto& e : edges)
+            if (custo[e.u] != INF && custo[e.v] > custo[e.u] + e.w){
+                custo[e.v] = custo[e.u] + e.w;
+                anterior[e.v] = e.u;
+            }
 
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n; j++)
-            if (m[i][j] != 0 && custo[i] != INF && custo[j] > custo[i] + m[i][j])
-                return true; // Ciclo negativo
-    
+    for (auto& e : edges)
+        if (custo[e.u] != INF && custo[e.v] > custo[e.u] + e.w)
+            return true; // Ciclo negativo
+
     return false;
 }
 
@@ -351,10 +350,13 @@ const int N=11;
 
 int cnt=1;
 int in[N],out[N],depth[N];//inicializa in e out com 0
+int dis[N],low[N];
 vector<int> adj[N];
+set<int> artPoints;
+set<pair<int,int>> bridges;
 
 
-int DFS(int v,int nivel){
+int DFS(int v,int nivel){//DFS com tempo de in e out, detecta ciclo e permite dizer se vertice faz parte da subarvore do outro
     in[v]=cnt++;
     depth[v]=nivel;
     for(int i=0;i<adj[v].size();i++){
@@ -367,6 +369,25 @@ int DFS(int v,int nivel){
     return 0;
 }
 
+void dfs(int v,int par){//dfs com lowlink e dis para deteccao de pontes e pontos de articulacao
+    bool parentEdge=false;
+    int children=0;
+    dis[v] = low[v] = cnt++;
+    for(auto i:adj[v]){
+        if(i==par&&!parentEdge){
+            parentEdge=true;
+            continue;
+        }
+        if(!dis[i]){
+            children++;
+            dfs(i,v);
+            low[v] = min(low[v], low[i]);
+            if (par!=-1 && low[i] >= dis[v]) artPoints.insert(v);
+            if (low[i] > dis[v]) bridges.insert({min(v,i),max(v,i)});
+        }else low[v] = min(low[v], dis[i]);
+    }
+    if (par==-1 && children>1) artPoints.insert(v);
+}
 ```
 
 <div style="page-break-after: always;"></div>
@@ -376,11 +397,13 @@ int DFS(int v,int nivel){
 ```cpp
 // Menor caminho
 //O(e+nlogn) sendo e=arestas
+#define SIZE 1000
+#define INF 0x3f3f3f3f
 typedef pair<int, int> ii;
 typedef vector<ii> vii;
 typedef vector<int> vi;
 
-vii adj[];
+vii adj[SIZE];
 vi custo(SIZE, INF);
 
 void dijkstra(int s){
@@ -425,7 +448,7 @@ void addEdge(int a,int b,int c){
     g[a].push_back(edges.size());
     edges.push_back(Edge{b,c});
     g[b].push_back(edges.size());
-    edges.push_back(Edge{a,c});
+    edges.push_back(Edge{a,c}); // Para arestas direcionadas use capacidade 0 na aresta reversa
 }
 //Roda BFS para pegar o caminho
 int BFS(int ini, int fim){ // 1 se tiver caminho, 0 caso nao
@@ -491,7 +514,9 @@ int minCut(int tam){
 ```cpp
 // Deteccao de ciclo negativo e caminho minimo para qualquer u, v
 //O(n^3)
-int m[][], custo[][];
+#define NMAX 1000
+#define INF 0x3f3f3f3f
+int m[NMAX][NMAX], custo[NMAX][NMAX];
 
 bool floydWarshall(int n){
     int i, j, k;
@@ -509,7 +534,7 @@ bool floydWarshall(int n){
                     custo[i][j] > custo[i][k] + custo[k][j])
                     custo[i][j] = custo[i][k] + custo[k][j];
             }
-            if (custo[j][j]< 0)
+            if (custo[i][i]< 0)
                 return true;
         }
     return false;
@@ -525,32 +550,29 @@ bool floydWarshall(int n){
 // arvore geradora minima
 // usa union find
 //O(elogv)
-int mat[][];
-int pai[], rnk[];
+#define NMAX 1000
+int pai[NMAX], rnk[NMAX];
 
 int find(int u){
-    while (u != pai[u]) u = pai[u];
-    return pai[u];
+    return pai[u] = (pai[u] == u ? u : find(pai[u]));
 }
 
-int merge(int u, int v){
+void merge(int u, int v){
     u = find(u); v = find(v);
     if(rnk[u] > rnk[v]) pai[v] = u; else pai[u] = v;
     if(rnk[u] == rnk[v]) rnk[v]++;
 }
 
-int kruskall(int tam){
-    vector<tuple<int, int, int>> vec;
-    vector<tuple<int, int, int>>::iterator it;
-    int i, j, res = 0;
-    for (i = 0; i < tam; i++){
+// edges: vetor de (peso, u, v)
+int kruskall(int n, vector<tuple<int,int,int>>& edges){
+    for (int i = 0; i < n; i++){
         pai[i] = i; rnk[i] = 0;
-        for (j = 0; j < tam; j++) vec.push_back(make_tuple(mat[i][j], i, j));
     }
-    sort(vec.begin(), vec.end());
-    for(it = vec.begin(); it != vec.end(); it++)
-        if (find(get<1>(*it)) != find(get<2>(*it))){
-            res += get<0>(*it); merge(get<1>(*it), get<1>(*it));
+    sort(edges.begin(), edges.end());
+    int res = 0;
+    for (auto& [w, u, v] : edges)
+        if (find(u) != find(v)){
+            res += w; merge(u, v);
         }
     return res;
 }
@@ -568,13 +590,13 @@ const int LN=20;
 int depth[N],memo[LN][N];
 vector<int> filhos[N];
 //O(nlogn)
-void dfs(int s){
+void dfs(int s, int par){
+    memo[0][s]=par;
     for(int i=0;i<filhos[s].size();i++){
         int f=filhos[s][i];
-        if(memo[0][s]==f) continue;
+        if(f==par) continue;
         depth[f]=depth[s]+1;
-        memo[0][f]=s;
-        dfs(f);
+        dfs(f,s);
     }
 }
 void compute(int n){
@@ -673,7 +695,7 @@ double prim()
 vector<int> adj[NMAX];
 stack<int> s;
 int c, t, dis[NMAX], low[NMAX], ins[NMAX];
-set<int> comp[NMAX]; set<int>::iterator sit;
+vector<int> comp[NMAX];
 // c eh o numero de componentes e comp[] contem cada componente
 
 void DFS(int u){
@@ -689,10 +711,10 @@ void DFS(int u){
         int w = 0;
         while (s.top() != u){
             w = s.top();
-            comp[c].insert(w); ins[w] = 0; s.pop();
+            comp[c].push_back(w); ins[w] = 0; s.pop();
         }
         w = s.top();
-        comp[c].insert(w); ins[w] = 0; s.pop();
+        comp[c].push_back(w); ins[w] = 0; s.pop();
         c++;
     } 
 }
@@ -705,6 +727,41 @@ void tarjan(int n){
     for(int i = 0; i < n; i++) if (dis[i] == -1) DFS(i);
 }
 
+```
+
+<div style="page-break-after: always;"></div>
+
+### TopologicalSort
+
+```cpp
+//O(n+m)
+const int N = 112345;
+vector<int> adj[N];
+bool vis[N],in[N];
+vector<int> ans;
+
+bool dfs(int v) {
+    in[v]=vis[v]=true;
+    for (int u : adj[v]) {
+        if (!vis[u]) {
+            if(dfs(u)) return true;
+        }else if(in[u]) return true;
+    }
+    in[v]=false;
+    ans.push_back(v);
+    return false;
+}
+
+bool topological_sort(int n) {//Ordena topologicamente e caso seja impossivel retorna false
+    ans.clear();
+    for (int i = 0; i < n; ++i) {
+        if (!vis[i]) {
+            if(dfs(i)) return false;
+        }
+    }
+    reverse(ans.begin(), ans.end());
+    return true;
+}
 ```
 
 <div style="page-break-after: always;"></div>
@@ -813,7 +870,7 @@ int bb(int n){//Busca Binaria que procura um valor que compra os requisitos da f
     int res=-1;
     while(lmin<=lmax){
         int mid=(lmin+lmax)/2;
-        if(testa(n,mid)){
+        if(test(n,mid)){
             res=mid;
             lmin=mid+1;
         }
@@ -835,7 +892,8 @@ int bb(int n){//Busca Binaria que procura um valor que compra os requisitos da f
 double A[20][20],b[20],X[20];
 //Calcula o determinante sem comprometer a matriz O(n^3)
 double det(int n){
-    double mat[n][n],res=1;
+    vector<vector<double>> mat(n, vector<double>(n));
+    double res=1;
     int mxI;
     for(int i=0;i<n;i++)
         for(int j=0;j<n;j++) mat[i][j]=A[i][j];
@@ -864,7 +922,7 @@ double det(int n){
 
 void solver(int n){
     double d=det(n);
-    double aux[n];
+    vector<double> aux(n);
     //if(abs(d)<1e-12) return;//determinante = 0
     for(int i=0;i<n;i++){
         for(int j=0;j<n;j++){
@@ -1154,7 +1212,8 @@ int editDistance(string s1, string s2)
 ```cpp
 // range query soma
 //O(logn)
-int BIT[];
+#define NMAX 1000
+int BIT[NMAX];
 
 void updateBIT(int tam, int index, int valor){
     index++;
@@ -1167,7 +1226,7 @@ void updateBIT(int tam, int index, int valor){
 void buildBIT(int  *vet, int tam){
     int i;
     memset(BIT, 0, sizeof(BIT));
-    for (i == 0; i < tam; i++) updateBIT(tam, i, vet[i]);
+    for (i = 0; i < tam; i++) updateBIT(tam, i, vet[i]);
 }
 
 int queryBIT(int index){
@@ -1188,10 +1247,11 @@ int queryBIT(int index){
 ```cpp
 // Encher a mochila com maior valor
 //O(n*W)
-int peso[], valor[];
+#define NMAX 1000
+int peso[NMAX], valor[NMAX];
 
 // com repeticao
-int knapSack(int W, int n){
+int knapSackRep(int W, int n){
     int memo[W+1];
     memset(memo, 0, sizeof(memo));
     for (int w = 0; w <= W; w++){
@@ -1215,11 +1275,10 @@ int knapSack(int W, int n){
     return memo[W];
 }
 
-// versao com matriz.
+// versao com matriz. Permite reconstruir os itens escolhidos.
+int mat[NMAX][NMAX];
 
-int mat[][];
-
-int knapSack(int W, int n) {
+int knapSackMat(int W, int n) {
     for (int i = 1; i <= n; ++i) {
         for (int w = 0; w <= W; ++w) {
             if (peso[i-1] <= w) {
@@ -1367,6 +1426,127 @@ int main(){
 
 <div style="page-break-after: always;"></div>
 
+### Persistent-Segment-Tree
+
+```cpp
+
+#define N 100
+
+struct node
+{
+    int val;
+    node* left, *right;
+
+    node() {}
+    node(node* l, node* r, int v)
+    {
+        left = l;
+        right = r;
+        val = v;
+    }
+};
+
+int arr[N];
+
+node* version[N];
+
+//O(nlogn)
+void build(node* n,int low,int high)
+{
+    if (low==high)
+    {
+        n->val = arr[low];
+        return;
+    }
+    int mid = (low+high) / 2;
+    n->left = new node(NULL, NULL, 0);
+    n->right = new node(NULL, NULL, 0);
+    build(n->left, low, mid);
+    build(n->right, mid+1, high);
+    n->val = n->left->val + n->right->val;
+}
+
+/*
+ * Time Complexity : O(logn)
+ * Space Complexity : O(logn)  */
+void upgrade(node* prev, node* cur, int low, int high, int idx, int value)
+{
+    if (idx > high or idx < low or low > high)
+        return;
+
+    if (low == high)
+    {
+        // modification in new version
+        cur->val = value;
+        return;
+    }
+    int mid = (low+high) / 2;
+    if (idx <= mid)
+    {
+        // link to right child of previous version
+        cur->right = prev->right;
+
+        // create new node in current version
+        cur->left = new node(NULL, NULL, 0);
+
+        upgrade(prev->left,cur->left, low, mid, idx, value);
+    }
+    else
+    {
+        // link to left child of previous version
+        cur->left = prev->left;
+
+        // create new node for current version
+        cur->right = new node(NULL, NULL, 0);
+
+        upgrade(prev->right, cur->right, mid+1, high, idx, value);
+    }
+
+    // calculating data for current version
+    cur->val = cur->left->val + cur->right->val;
+}
+
+int query(node* n, int low, int high, int l, int r)
+{
+    if (l > high or r < low or low > high)
+       return 0;
+    if (l <= low and high <= r)
+       return n->val;
+    int mid = (low+high) / 2;
+    int p1 = query(n->left,low,mid,l,r);
+    int p2 = query(n->right,mid+1,high,l,r);
+    return p1+p2;
+}
+
+int main(int argc, char const *argv[])
+{
+    int A[] = {1,2,3,4,5};
+    int n = sizeof(A)/sizeof(int);
+
+    for (int i=0; i<n; i++) 
+       arr[i] = A[i];
+
+    // creating Version-0
+    node* root = new node(NULL, NULL, 0);
+    build(root, 0, n-1);
+
+    // storing root node for version-0
+    version[0] = root;
+
+    // upgrading to version-1
+    version[1] = new node(NULL, NULL, 0);
+    upgrade(version[0], version[1], 0, n-1, 4, 1);
+
+    // upgrading to version-2
+    version[2] = new node(NULL, NULL, 0);
+    upgrade(version[1],version[2], 0, n-1, 2, 10);
+    
+    return 0;
+}
+```
+
+<div style="page-break-after: always;"></div>
+
 ### Segment-Tree-Lazy-Propagation
 
 ```cpp
@@ -1452,7 +1632,8 @@ int main()
 ```cpp
 // range query multiplicacao
 //O(nlogn)
-int vet[];
+const int N=1123;
+int vet[N];
 struct tree{
     tree *esq, *dir;
     int from, to, valor;
@@ -1491,6 +1672,73 @@ int update(tree *arv, int i, int valor){
 
 <div style="page-break-after: always;"></div>
 
+### SparseTable
+
+```cpp
+//O(nlogn) construcao O(1)ouO(logn) para querys
+const int K=21;
+const int N=112345;
+int st[K + 1][N];
+int lg[N + 1];
+vector<int> v;
+
+int f(int a,int b){//Funcao das querys
+    return min(a,b);
+}
+void build(){
+    copy(v.begin(), v.end(), st[0]);
+    lg[1] = 0;
+    for (int i = 2; i <= N; i++)
+        lg[i] = lg[i/2] + 1;
+
+    for (int i = 1; i <= K; i++)
+        for (int j = 0; j + (1 << i) <= N; j++)
+            st[i][j] = f(st[i - 1][j], st[i - 1][j + (1 << (i - 1))]);
+}
+
+int queryI(int L,int R){//Funcao Idempotente: O(1)
+    int i = lg[R - L + 1];
+    return f(st[i][L], st[i][R - (1 << i) + 1]);
+}
+
+long long query(int L,int R){//Exemplo para soma: O(logn)
+    long long sum = 0;
+    for (int i = K; i >= 0; i--) {
+        if ((1 << i) <= R - L + 1) {
+            sum += st[i][L];
+            L += 1 << i;
+        }
+    }
+    return sum;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### SubsetSum
+
+```cpp
+//O(n*sum) nao funciona com numero negativo
+vector<int> nums;
+
+bool subsetsum(int sum) {
+    vector<bool> prev(sum+1,false),cur(sum+1,false);
+    prev[0]=true;
+    for(auto i:nums){
+        for(int j=0;j<=sum;j++){
+            if(j<i) cur[j]=prev[j];
+            else cur[j]=(prev[j]||prev[j-i]);
+        }
+        prev=cur;
+    }
+    return prev[sum];
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
 ### Sum-Array-2D
 
 ```cpp
@@ -1514,6 +1762,69 @@ int soma(int x,int y,int lado){
 <div style="page-break-after: always;"></div>
 
 ## String
+
+### AhoCorasick
+
+```cpp
+//O(mk) m=tamanho total das strings, k=tamanho do alfabeto
+// Chamar build() depois de adicionar todas as strings
+const int K = 26;
+
+struct Vertex {
+    int next[K];
+    int go[K];
+    bool output = false;
+    int link = 0;
+
+    Vertex() {
+        fill(begin(next), end(next), -1);
+        fill(begin(go), end(go), 0);
+    }
+};
+
+vector<Vertex> t(1);
+
+void add_string(string const& s) {
+    int v = 0;
+    for (char ch : s) {
+        int c = ch - 'a';
+        if (t[v].next[c] == -1) {
+            t[v].next[c] = t.size();
+            t.emplace_back();
+        }
+        v = t[v].next[c];
+    }
+    t[v].output = true;
+}
+
+void build() {
+    queue<int> q;
+    for (int c = 0; c < K; c++) {
+        if (t[0].next[c] == -1) {
+            t[0].go[c] = 0;
+        } else {
+            t[0].go[c] = t[0].next[c];
+            q.push(t[0].next[c]);
+        }
+    }
+    while (!q.empty()) {
+        int v = q.front(); q.pop();
+        for (int c = 0; c < K; c++) {
+            if (t[v].next[c] != -1) {
+                int u = t[v].next[c];
+                t[u].link = t[t[v].link].go[c];
+                t[v].go[c] = u;
+                q.push(u);
+            } else {
+                t[v].go[c] = t[t[v].link].go[c];
+            }
+        }
+    }
+}
+
+```
+
+<div style="page-break-after: always;"></div>
 
 ### Levenshtein
 
@@ -1551,7 +1862,7 @@ int levenshtein(const string& a, const string& b) {
 
 ```cpp
 //Funcao para Palindromos
-const int S=111;//Tamanho maximo da palavra
+const int S=200010;//Tamanho maximo da palavra
 
 int odd[S];//Guarda o maior tamanho de palindromo centrado na posicao i, tamanho = 2*odd[i]-1
 int even[S];//Guarda o maior tamanho de palindromo centrado nas posicoes i e i-1, tamanho = 2*even[i]
@@ -1615,6 +1926,164 @@ void conta_prefixos(string s){//Conta quantas vezes cada prefixo aparece na stri
         ans[i]++;
 }
 
+```
+
+<div style="page-break-after: always;"></div>
+
+### StringHashing
+
+```cpp
+
+const int p = 31;
+const int m = 1000000009;
+
+long long compute_hash(string const& s) {//Calcula hash em O(S) mas permite comparações entre strings em O(1)
+    long long hash_value = 0;
+    long long p_pow = 1;
+    for (char c : s) {
+        hash_value = (hash_value + (c - 'a' + 1) * p_pow) % m;
+        p_pow = (p_pow * p) % m;
+    }
+    return hash_value;
+}
+
+vector<vector<int>> group_identical_strings(vector<string> const& s) {//Utiliza hash para agrupar strings iguais
+    int n = s.size();
+    vector<pair<long long, int>> hashes(n);
+    for (int i = 0; i < n; i++)
+        hashes[i] = {compute_hash(s[i]), i};
+
+    sort(hashes.begin(), hashes.end());
+
+    vector<vector<int>> groups;
+    for (int i = 0; i < n; i++) {
+        if (i == 0 || hashes[i].first != hashes[i-1].first)
+            groups.emplace_back();
+        groups.back().push_back(hashes[i].second);
+    }
+    return groups;
+}
+
+vector<int> rabin_karp(string const& s, string const& t) {//Conta quantas ocorrencias de s existe no texto t O(T+S)
+    int S = s.size(), T = t.size();
+
+    vector<long long> p_pow(max(S, T)); 
+    p_pow[0] = 1; 
+    for (int i = 1; i < (int)p_pow.size(); i++) 
+        p_pow[i] = (p_pow[i-1] * p) % m;
+
+    vector<long long> h(T + 1, 0); 
+    for (int i = 0; i < T; i++)
+        h[i+1] = (h[i] + (t[i] - 'a' + 1) * p_pow[i]) % m; 
+    long long h_s = 0; 
+    for (int i = 0; i < S; i++) 
+        h_s = (h_s + (s[i] - 'a' + 1) * p_pow[i]) % m; 
+
+    vector<int> occurrences;
+    for (int i = 0; i + S - 1 < T; i++) {
+        long long cur_h = (h[i+S] + m - h[i]) % m;
+        if (cur_h == h_s * p_pow[i] % m)
+            occurrences.push_back(i);
+    }
+    return occurrences;
+}
+```
+
+<div style="page-break-after: always;"></div>
+
+### SuffixAutomaton
+
+```cpp
+//O(n)
+struct state {
+    int len, link;
+    map<char, int> next;
+};
+
+const int N = 112345;
+state st[N * 2];
+int sz, last;
+
+void sa_init() {
+    st[0].len = 0;
+    st[0].link = -1;
+    st[0].next.clear();
+    sz = 1;
+    last = 0;
+}
+
+void sa_extend(char c) {
+    int cur = sz++;
+    st[cur].len = st[last].len + 1;
+    int p = last;
+    while (p != -1 && !st[p].next.count(c)) {
+        st[p].next[c] = cur;
+        p = st[p].link;
+    }
+    if (p == -1) {
+        st[cur].link = 0;
+    } else {
+        int q = st[p].next[c];
+        if (st[p].len + 1 == st[q].len) {
+            st[cur].link = q;
+        } else {
+            int clone = sz++;
+            st[clone].len = st[p].len + 1;
+            st[clone].next = st[q].next;
+            st[clone].link = st[q].link;
+            while (p != -1 && st[p].next[c] == q) {
+                st[p].next[c] = clone;
+                p = st[p].link;
+            }
+            st[q].link = st[cur].link = clone;
+        }
+    }
+    last = cur;
+}
+
+long long get_diff_strings(){//Total de substrings diferentes
+    long long tot = 0;
+    for(int i = 1; i < sz; i++) {
+        tot += st[i].len - st[st[i].link].len;
+    }
+    return tot;
+}
+
+long long get_tot_len_diff_substrings() {//Soma dos tamanhos de substrings diferentes
+    long long tot = 0;
+    for(int i = 1; i < sz; i++) {
+        long long shortest = st[st[i].link].len + 1;
+        long long longest = st[i].len;
+
+        long long num_strings = longest - shortest + 1;
+        long long cur = num_strings * (longest + shortest) / 2;
+        tot += cur;
+    }
+    return tot;
+}
+
+string lcs (string S, string T) {//Longest Common Substring
+    sa_init();
+    for (int i = 0; i < S.size(); i++)
+        sa_extend(S[i]);
+
+    int v = 0, l = 0, best = 0, bestpos = 0;
+    for (int i = 0; i < T.size(); i++) {
+        while (v && !st[v].next.count(T[i])) {
+            v = st[v].link ;
+            l = st[v].len;
+        }
+        if (st[v].next.count(T[i])) {
+            v = st [v].next[T[i]];
+            l++;
+        }
+        if (l > best) {
+            best = l;
+            bestpos = i;
+        }
+    }
+    return T.substr(bestpos - best + 1, best);
+}
 ```
 
 <div style="page-break-after: always;"></div>
