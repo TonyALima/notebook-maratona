@@ -98,21 +98,101 @@ void convex_hull(vector<Vetor>& pts, bool include_collinear=false) {//O(nlogn)
 
 ```cpp
 
-typedef struct{double x, y;}Ponto;
-
-// Função para calcular o produto vetorial
-double crossProduct(Ponto a, Ponto b) {
-    return a.x * b.y - a.y * b.x;
+// Requer: Template (Vetor, EPS, ccw)
+bool onSegment(Vetor a, Vetor b, Vetor p) {//p pertence ao segmento ab
+    return ccw(a,b,p)==0 &&
+       min(a.x,b.x)-EPS <= p.x && p.x <= max(a.x,b.x)+EPS &&
+       min(a.y,b.y)-EPS <= p.y && p.y <= max(a.y,b.y)+EPS;
 }
 
-bool doIntersect(Ponto p1, Ponto p2, Ponto p3, Ponto p4) {
-    double d1 = crossProduct({p3.x - p1.x, p3.y - p1.y}, {p2.x - p1.x, p2.y - p1.y});
-    double d2 = crossProduct({p4.x - p1.x, p4.y - p1.y}, {p2.x - p1.x, p2.y - p1.y});
-    double d3 = crossProduct({p1.x - p3.x, p1.y - p3.y}, {p4.x - p3.x, p4.y - p3.y});
-    double d4 = crossProduct({p2.x - p3.x, p2.y - p3.y}, {p4.x - p3.x, p4.y - p3.y});
-
-    return (d1 * d2 < 0) && (d3 * d4 < 0);
+bool intersect(Vetor a, Vetor b, Vetor c, Vetor d) {//segmentos ab e cd se intersectam
+    int d1 = ccw(a,b,c), d2 = ccw(a,b,d);
+    int d3 = ccw(c,d,a), d4 = ccw(c,d,b);
+    if(d1*d2<0 && d3*d4<0) return true;
+    if(d1==0 && onSegment(a,b,c)) return true;
+    if(d2==0 && onSegment(a,b,d)) return true;
+    if(d3==0 && onSegment(c,d,a)) return true;
+    if(d4==0 && onSegment(c,d,b)) return true;
+    return false;
 }
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Poligono
+
+```cpp
+
+// Requer: Template (Vetor, ccw)
+double area(vector<Vetor>& poly){//Funciona para poligonos convexos ou nao
+    double s=0;
+    int n=poly.size();
+    for(int i=0;i<n;i++)
+        s += poly[i] ^ poly[(i+1)%n];
+    return fabs(s)/2;
+}
+
+bool inPolygon(vector<Vetor> polygon,Vetor p){//Poligono convexo em anti-horario, O(log n)
+    Vetor piv=polygon[0];
+    if(p==piv) return true;
+    if(ccw(p,piv,polygon[1])<0) return false;
+    if(ccw(polygon[polygon.size()-1],piv,p)<0) return false;
+    int l=1,r=polygon.size()-1;
+    while(l+1<r){
+        int mid = (l+r)>>1;
+        if(ccw(piv,polygon[mid],p)>=0) l=mid;
+        else r=mid;
+    }
+    return ccw(polygon[l],polygon[r],p)>=0;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Reta
+
+```cpp
+
+// Requer: Template (Vetor, EPS)
+// Reta: ~=normal unitario !=direcao unitario posicao(p) dist(p) ||=paralelo ==igual ^=interseccao
+class Reta{//ax+by+c=0 | construida a partir de dois pontos
+    public:
+    double a,b,c;
+    Reta(Vetor s,Vetor e){
+        this->a=s.y-e.y;
+        this->b=e.x-s.x;
+        this->c=s^e;
+    }
+    Vetor operator~() const{//Vetor normal unitario
+        Vetor n={this->a,this->b};
+        return n/(~n);
+    }
+    Vetor operator!() const{//Vetor direcao unitario
+        Vetor d={-this->b,this->a};
+        return d/(~d);
+    }
+    double posicao(Vetor p){//=0 na reta, >0 ou <0 nos lados
+        return this->a*p.x+this->b*p.y+c;
+    }
+    double dist(Vetor p){
+        return (this->posicao(p))/(~(~(*this)));
+    }
+    bool operator||(const Reta r)const {//true se paralelas
+        return (fabs(this->a*r.b - this->b*r.a) < EPS);
+    }
+    bool operator==(const Reta& l) const {
+        return fabs(this->a*l.b - this->b*l.a) < EPS &&
+            fabs(this->a*l.c - this->c*l.a) < EPS &&
+            fabs(this->b*l.c - this->c*l.b) < EPS;
+    }
+    Vetor operator^(Reta r){//Ponto de interseccao (verificar && antes)
+        double det=this->a*r.b-this->b*r.a;
+        Vetor ponto={-(this->c*r.b-this->b*r.c)/det,-(this->a*r.c-this->c*r.a)/det};
+        return ponto;
+    }
+};
 
 ```
 
@@ -126,8 +206,10 @@ typedef long long int ll;
 const double EPS = 1e-9;
 const double PI = acos(-1);
 
+// Vetor: +(add) -(sub) *(double)=escala *(Vetor)=dot ^=cross ~=modulo dist(p,q)=dist ao segmento pq
+// cmpPolar: usar com sort + Vetor::pivot para ordenar por angulo polar
 class Vetor{
-    public: 
+    public:
     double x,y;//Pode ser trocado por long long int dependendo da questao
     Vetor operator+(Vetor q) const{
         return {this->x+q.x,this->y+q.y};
@@ -135,22 +217,22 @@ class Vetor{
     Vetor operator-(Vetor q) const{
         return {this->x-q.x,this->y-q.y};
     }
-    Vetor operator*(double k) const{//Escalar vezes vetor
+    Vetor operator*(double k) const{//Escalar * vetor
         return {this->x*k,this->y*k};
     }
-    Vetor operator/(double k) const{//Escalar vezes vetor
+    Vetor operator/(double k) const{//Vetor / escalar
         return {this->x/k,this->y/k};
     }
-    double operator*(Vetor q) const{//Vetor escalar vetor
+    double operator*(Vetor q) const{//Produto escalar
         return this->x*q.x+this->y*q.y;
     }
     double operator^(Vetor q) const{//Produto vetorial
         return this->x*q.y-q.x*this->y;
     }
-    double operator~() const{//Modulo do vetor/Distancia
+    double operator~() const{//Modulo / distancia da origem
         return sqrt((*this)*(*this));
     }
-    double dist(Vetor p,Vetor q) const{
+    double dist(Vetor p,Vetor q) const{//Distancia de *this ao segmento pq
         Vetor r=*this;
         if((q-p)*(r-p)<=0||(p-q)*(r-q)<=0) return min(~(r-p),~(r-q));
         else return abs(((r-p)^(q-p))/(~(q-p)));
@@ -159,72 +241,29 @@ class Vetor{
         return fabs(this->x - p.x) < EPS && fabs(this->y - p.y) < EPS;
     }
     bool operator!=(const Vetor p)const {
-        if(*this==p) return false;
-        return true;
+        return !(*this==p);
     }
     bool operator<(const Vetor p)const {
         if(this->x!=p.x) return this->x<p.x;
         return this->y<p.y;
     }
-    static Vetor pivot; 
-
-    static bool cmpPolar(const Vetor& a, const Vetor& b){//Usado no sort pra ordenar no sentido horario
+    static Vetor pivot;
+    static bool cmpPolar(const Vetor& a, const Vetor& b){//Ordena por angulo polar a partir de pivot
         Vetor A = {a.x - pivot.x, a.y - pivot.y};
         Vetor B = {b.x - pivot.x, b.y - pivot.y};
         ll cross = A ^ B;
-        if(cross == 0) {
-            // se colineares, ordenar pelo mais próximo ao pivô
+        if(cross == 0)
             return (A.x*A.x + A.y*A.y) < (B.x*B.x + B.y*B.y);
-        }
-        return cross < 0; // "<0" = sentido horário, ">0" = anti-horário
+        return cross < 0; // <0 horario, >0 anti-horario
     }
 };
-Vetor Vetor::pivot = {0,0};//Vai receber o valor da funcao centroide
-Vetor centroide(const vector<Vetor>& pts){//Calcula o pivot pra ordenar
+Vetor Vetor::pivot = {0,0};
+
+Vetor centroide(const vector<Vetor>& pts){
     ll sx=0, sy=0;
-    for(auto &p: pts){
-        sx += p.x;
-        sy += p.y;
-    }
+    for(auto &p: pts){ sx += p.x; sy += p.y; }
     return {sx/(ll)pts.size(), sy/(ll)pts.size()};
 }
-
-class Reta{//Caso seja passado pontos para descobrir a reta, resolver o sistema
-    public:
-    double a,b,c;//ax+by+c
-    Reta(Vetor s,Vetor e){
-        this->a=s.y-e.y;
-        this->b=e.x-s.x;
-        this->c=s^e;
-    }
-    Vetor operator~() const{//Vetor normal a reta
-        Vetor n={this->a,this->b};
-        return n/(~n);
-    }
-    Vetor operator!() const{//Vetor direcao da reta
-        Vetor d={-this->b,this->a};
-        return d/(~d);
-    }
-    double posicao(Vetor p){//Na reta =0, de um lado >0 no outro <0
-        return this->a*p.x+this->b*p.y+c;
-    }
-    double dist(Vetor p){
-        return (this->posicao(p))/(~(~(*this)));
-    }
-    bool operator&&(const Reta r)const {//Returna  true se for paralelo
-        return (fabs(this->a*r.b - this->b*r.a) < EPS);
-    }
-    bool operator==(const Reta& l) const {
-        return fabs(this->a*l.b - this->b*l.a) < EPS &&
-            fabs(this->a*l.c - this->c*l.a) < EPS &&
-            fabs(this->b*l.c - this->c*l.b) < EPS;
-    }
-    Vetor operator^(Reta r){//Retorna ponto de interseccao
-        double det=this->a*r.b-this->b*r.a;//Teoricamente !=0 pois foi usado & antes
-        Vetor ponto={-(this->c*r.b-this->b*r.c)/det,-(this->a*r.c-this->c*r.a)/det};
-        return ponto;
-    }
-};
 
 class Circle{
     public:
@@ -234,40 +273,10 @@ class Circle{
     Circle(double x,double y,double raio): o({x,y}),r(raio){ }
 };
 
-int ccw(Vetor a, Vetor b, Vetor c) {
+int ccw(Vetor a, Vetor b, Vetor c) {//1=esquerda, -1=direita, 0=colinear
     double cross = (b-a)^(c-a);
-    if(fabs(cross) < EPS) return 0; // colineares
-    return cross > 0 ? 1 : -1; // 1 = esquerda, -1 = direita | c da reta ab
-}
-
-bool onSegment(Vetor a, Vetor b, Vetor p) {//p no segmento ab
-    return ccw(a,b,p)==0 && 
-       min(a.x,b.x)-EPS <= p.x && p.x <= max(a.x,b.x)+EPS &&
-       min(a.y,b.y)-EPS <= p.y && p.y <= max(a.y,b.y)+EPS;
-}
-
-bool intersect(Vetor a, Vetor b, Vetor c, Vetor d) {//segmento ab e cd intersectam
-    int d1 = ccw(a,b,c), d2 = ccw(a,b,d);
-    int d3 = ccw(c,d,a), d4 = ccw(c,d,b);
-    if(d1*d2<0 && d3*d4<0) return true;
-    if(d1==0 && onSegment(a,b,c)) return true;
-    if(d2==0 && onSegment(a,b,d)) return true;
-    if(d3==0 && onSegment(c,d,a)) return true;
-    if(d4==0 && onSegment(c,d,b)) return true;
-    return false;
-}
-
-double area(vector<Vetor>& poly){//Precisa estar ordenado no sentido horario ou contrario e ser convexo
-    double s=0;
-    int n=poly.size();
-    for(int i=0;i<n;i++)
-        s += poly[i] ^ poly[(i+1)%n];
-    return fabs(s)/2;
-}
-
-int main(){
-
-    return 0;
+    if(fabs(cross) < EPS) return 0;
+    return cross > 0 ? 1 : -1;
 }
 
 ```
