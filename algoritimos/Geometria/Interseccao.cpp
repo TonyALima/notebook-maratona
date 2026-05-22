@@ -1,18 +1,20 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-typedef struct{double x, y;}Ponto;
-
-// Função para calcular o produto vetorial
-double crossProduct(Ponto a, Ponto b) {
-    return a.x * b.y - a.y * b.x;
+// Requer: Template (Vetor, EPS, ccw)
+bool onSegment(Vetor a, Vetor b, Vetor p) {//p pertence ao segmento ab
+    return ccw(a,b,p)==0 &&
+       min(a.x,b.x)-EPS <= p.x && p.x <= max(a.x,b.x)+EPS &&
+       min(a.y,b.y)-EPS <= p.y && p.y <= max(a.y,b.y)+EPS;
 }
 
-bool doIntersect(Ponto p1, Ponto p2, Ponto p3, Ponto p4) {
-    double d1 = crossProduct({p3.x - p1.x, p3.y - p1.y}, {p2.x - p1.x, p2.y - p1.y});
-    double d2 = crossProduct({p4.x - p1.x, p4.y - p1.y}, {p2.x - p1.x, p2.y - p1.y});
-    double d3 = crossProduct({p1.x - p3.x, p1.y - p3.y}, {p4.x - p3.x, p4.y - p3.y});
-    double d4 = crossProduct({p2.x - p3.x, p2.y - p3.y}, {p4.x - p3.x, p4.y - p3.y});
-
-    return (d1 * d2 < 0) && (d3 * d4 < 0);
+bool intersect(Vetor a, Vetor b, Vetor c, Vetor d) {//segmentos ab e cd se intersectam
+    int d1 = ccw(a,b,c), d2 = ccw(a,b,d);
+    int d3 = ccw(c,d,a), d4 = ccw(c,d,b);
+    if(d1*d2<0 && d3*d4<0) return true;
+    if(d1==0 && onSegment(a,b,c)) return true;
+    if(d2==0 && onSegment(a,b,d)) return true;
+    if(d3==0 && onSegment(c,d,a)) return true;
+    if(d4==0 && onSegment(c,d,b)) return true;
+    return false;
 }
