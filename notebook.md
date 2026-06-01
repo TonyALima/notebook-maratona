@@ -1241,8 +1241,6 @@ void solve(int n){
 //O(logMOD) precisa de gcd(n,MOD)=1 MOD precisa ser primo
 const long long MOD=998244353;
 
-long long mod_inv(long long num){return fpow(num,MOD-2);}
-
 long long fpow(long long base, long long power) {
     long long result = 1;
     while(power > 0) {
@@ -1252,6 +1250,8 @@ long long fpow(long long base, long long power) {
     }
     return result;
 }
+
+long long mod_inv(long long num){return fpow(num,MOD-2);}
 
 ```
 
