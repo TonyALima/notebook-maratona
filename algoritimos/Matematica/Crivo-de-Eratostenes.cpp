@@ -1,8 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 // Cria um vetor de fatores primos / todos os primos ate N
+// fprimos[i] = menor fator primo de i (fprimos[primo] = primo, fprimos[0]=fprimos[1]=1)
 //O(n)
-int fprimos[]; // inicializa com 0
+#define MAXN 10000000
+int fprimos[MAXN]; // inicializa com 0
 
 void crivo(int n){
     fprimos[0] = fprimos[1] = 1;
@@ -10,9 +12,9 @@ void crivo(int n){
         if(fprimos[i] == 0){
             fprimos[i] = i;
         }
-        if (i * i < n){
+        if ((long long)i * i < n){
             for (int j = i*i; j < n; j+=i){
-                fprimos[j] = i;
+                if(fprimos[j] == 0) fprimos[j] = i;
             }
         }
     }

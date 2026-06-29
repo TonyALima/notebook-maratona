@@ -2,6 +2,8 @@
 using namespace std;
 //O(mk) m=tamanho total das strings, k=tamanho do alfabeto
 // Chamar build() depois de adicionar todas as strings
+// ATENCAO: output so marca correspondencias exatas. Para detectar padroes mais curtos que sao sufixos
+// de um estado, percorrer a cadeia de links de sufixo coletando nos com output=true (dict link).
 const int K = 26;
 
 struct Vertex {

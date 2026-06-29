@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+// ATENCAO: hash simples pode ter colisoes. Para maior seguranca use dois pares (p,m) diferentes (double hash).
 const int p = 31;
 const int m = 1000000009;
 

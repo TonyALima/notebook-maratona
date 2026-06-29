@@ -3,20 +3,19 @@ using namespace std;
 // range query multiplicacao
 //O(nlogn)
 const int N=1123;
-int vet[N];
 struct tree{
     tree *esq, *dir;
     int from, to, valor;
     tree(int _from, int _to):from(_from), to(_to), dir(NULL), esq(NULL), valor(1){}
 };
 
-tree * build(int e, int d){
+tree * build(int e, int d, int* vet){
     if (e > d) return NULL;
     tree *res = new tree(e,d);
     if (e == d) res->valor = vet[e];
     else{
         int m = (e+d)/2;
-        res->esq = build(e, m); res->dir = build(m+1, d);
+        res->esq = build(e, m, vet); res->dir = build(m+1, d, vet);
         if (res->esq != NULL) res->valor *= res->esq->valor;
         if (res->dir != NULL) res->valor *= res->dir->valor;
     }

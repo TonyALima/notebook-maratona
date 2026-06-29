@@ -6,6 +6,7 @@ int LIS(vector<int>& arr)
 {
     // Binary search approach
     int n = arr.size();
+    if (n == 0) return 0;
     vector<int> ans;
     ans.push_back(arr[0]);
     for(int i=1;i<arr.size();i++){

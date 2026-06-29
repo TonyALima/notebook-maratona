@@ -4,9 +4,9 @@ struct Congruence {
     long long a, m;
 };
 //Calcular Chinese Remainder Theorem, usa inverso modular
-long long mod_inv(long long a, long long m) {//O(m)
+long long mod_inv(long long a, long long m) {//O(log m)
     if (a <= 1) return a;
-    return m - (mod_inv(m % a, a) * (m / a) % m);
+    return m - (mod_inv(m % a, m) * (m / a) % m);
 }
 
 long long chinese_remainder_theorem(vector<Congruence> const& congruences) {//O(m*sizeof(congruences)

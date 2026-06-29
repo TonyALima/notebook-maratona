@@ -9,6 +9,12 @@ double sol[NMAX];
 void elimination(int n){
     double factor;
     for (int i = 0; i < n - 1; i++){
+        // pivotar pela linha com maior valor absoluto na coluna i
+        int mx = i;
+        for (int j = i+1; j < n; j++)
+            if (fabs(mat[j][i]) > fabs(mat[mx][i])) mx = j;
+        if (mx != i) swap(mat[mx], mat[i]);
+        if (fabs(mat[i][i]) < 1e-12) continue; // coluna singular
         for (int j = i+1; j < n; j++){
             factor = mat[j][i]/mat[i][i];
             for (int k = 0; k < n + 1; k++){

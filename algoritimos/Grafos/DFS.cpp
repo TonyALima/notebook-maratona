@@ -26,6 +26,7 @@ int DFS(int v,int nivel){//DFS com tempo de in e out, detecta ciclo e permite di
 }
 
 void dfs(int v,int par){//dfs com lowlink e dis para deteccao de pontes e pontos de articulacao
+    // parentEdge ignora apenas UMA aresta de volta ao pai; em multigrafos arestas paralelas ao pai nao sao ignoradas
     bool parentEdge=false;
     int children=0;
     dis[v] = low[v] = cnt++;

@@ -2,15 +2,25 @@
 using namespace std;
 
 // Requer: Template (Vetor, ccw)
-double area(vector<Vetor>& poly){//Funciona para poligonos convexos ou nao
-    double s=0;
+// Se Vetor::x,y forem ll, troque "long double s=0" por "ll s=0" (soma exata) e
+// "return fabsl(s)/2" por "return llabs(s)" retornando o dobro da area (evita .5 fracionario).
+long double area(vector<Vetor>& poly){//Funciona para poligonos convexos ou nao
+    long double s=0;
     int n=poly.size();
     for(int i=0;i<n;i++)
         s += poly[i] ^ poly[(i+1)%n];
-    return fabs(s)/2;
+    return fabsl(s)/2;
 }
 
-bool inPolygon(vector<Vetor> polygon,Vetor p){//Poligono convexo em anti-horario, O(log n)
+long double perimeter(vector<Vetor> &poly){
+    long double s=0;
+    int n=poly.size();
+    for(int i=0;i<n;i++)
+        s += ~(poly[i]-poly[(i+1)%n]);
+    return s;
+}
+
+bool inPolygon(vector<Vetor> &polygon,Vetor p){//Poligono convexo em anti-horario, O(log n)
     Vetor piv=polygon[0];
     if(p==piv) return true;
     if(ccw(p,piv,polygon[1])<0) return false;

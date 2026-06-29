@@ -3,6 +3,9 @@ using namespace std;
 //Vai ser utilizado a classe Vetor
 //da classe Vetor - ^ == < pivot cmpPolar
 //ccw
+// Nao usa sqrt/divisao: se Vetor::x,y forem ll, este arquivo funciona sem alteracoes (exato).
+// ATENCAO: cmpPolar usa cross<0, entao ordena em sentido HORARIO a partir do pivot.
+// O resultado de convex_hull() esta em ordem HORARIA (nao anti-horaria).
 bool cw(Vetor a, Vetor b, Vetor c,bool include_linear){
     int o=ccw(a,b,c);
     return o<0||(include_linear&&o==0);

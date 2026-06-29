@@ -17,12 +17,8 @@ struct node
     }
 };
 
-int arr[N];
-
-node* version[N];
-
 //O(nlogn)
-void build(node* n,int low,int high)
+void build(node* n, int low, int high, int* arr)
 {
     if (low==high)
     {
@@ -32,8 +28,8 @@ void build(node* n,int low,int high)
     int mid = (low+high) / 2;
     n->left = new node(NULL, NULL, 0);
     n->right = new node(NULL, NULL, 0);
-    build(n->left, low, mid);
-    build(n->right, mid+1, high);
+    build(n->left, low, mid, arr);
+    build(n->right, mid+1, high, arr);
     n->val = n->left->val + n->right->val;
 }
 
@@ -93,13 +89,11 @@ int main(int argc, char const *argv[])
 {
     int A[] = {1,2,3,4,5};
     int n = sizeof(A)/sizeof(int);
-
-    for (int i=0; i<n; i++) 
-       arr[i] = A[i];
+    node* version[N];
 
     // creating Version-0
     node* root = new node(NULL, NULL, 0);
-    build(root, 0, n-1);
+    build(root, 0, n-1, A);
 
     // storing root node for version-0
     version[0] = root;

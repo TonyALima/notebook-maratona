@@ -23,7 +23,7 @@ bool floydWarshall(int n){
                     custo[i][j] = custo[i][k] + custo[k][j];
             }
             if (custo[i][i]< 0)
-                return true;
+                return true; // retorno antecipado: matriz custo incompleta, nao usar apos true
         }
     return false;
 }

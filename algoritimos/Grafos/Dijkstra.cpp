@@ -9,7 +9,7 @@ typedef vector<ii> vii;
 typedef vector<int> vi;
 
 vii adj[SIZE];
-vi custo(SIZE, INF);
+vi custo(SIZE, INF); // resetar com fill(custo.begin(), custo.end(), INF) entre chamadas
 
 void dijkstra(int s){
     custo[s] = 0;
