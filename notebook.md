@@ -1054,21 +1054,18 @@ void solver(int n){
 ```cpp
 // Cria um vetor de fatores primos / todos os primos ate N
 //O(n)
-int fprimos[]; // inicializa com 0
-
-void crivo(int n){
+const int N=11234567;
+int fprimos[N]; // inicializa com 0
+//p=primo !fprimos[p]||fprimos[p]==p
+//p!=primo fprimos[p]&&fprimos[p]!=p
+void crivo(){
     fprimos[0] = fprimos[1] = 1;
-    for(int i = 2; i < n; i++){
-        if(fprimos[i] == 0){
-            fprimos[i] = i;
-        }
-        if (i * i < n){
-            for (int j = i*i; j < n; j+=i){
-                fprimos[j] = i;
-            }
-        }
+    for(int i = 2; i*i < N; i++){
+        if(fprimos[i] == 0) fprimos[i] = i;
+        for (int j = i*i; j < N; j+=i) fprimos[j] = fprimos[i];
     }
 }
+
 
 ```
 
@@ -1232,6 +1229,29 @@ void solve(int n){
         sol[l] = (mat[l][n] - s) / mat[l][l];
     }
 }
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Inverso-Modular
+
+```cpp
+//Inverso Modular para divisão com MOD
+//O(logMOD) precisa de gcd(n,MOD)=1 MOD precisa ser primo
+const long long MOD=998244353;
+
+long long fpow(long long base, long long power) {
+    long long result = 1;
+    while(power > 0) {
+        if(power&1) result = (result*base)%MOD ;
+        base = (base * base)%MOD;
+        power>>=1;
+    }
+    return result;
+}
+
+long long mod_inv(long long num){return fpow(num,MOD-2);}
 
 ```
 

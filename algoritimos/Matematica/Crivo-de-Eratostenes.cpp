@@ -3,19 +3,15 @@ using namespace std;
 // Cria um vetor de fatores primos / todos os primos ate N
 // fprimos[i] = menor fator primo de i (fprimos[primo] = primo, fprimos[0]=fprimos[1]=1)
 //O(n)
-#define MAXN 10000000
-int fprimos[MAXN]; // inicializa com 0
-
-void crivo(int n){
+const int N=11234567;
+int fprimos[N]; // inicializa com 0
+//p=primo !fprimos[p]||fprimos[p]==p
+//p!=primo fprimos[p]&&fprimos[p]!=p
+void crivo(){
     fprimos[0] = fprimos[1] = 1;
-    for(int i = 2; i < n; i++){
-        if(fprimos[i] == 0){
-            fprimos[i] = i;
-        }
-        if ((long long)i * i < n){
-            for (int j = i*i; j < n; j+=i){
-                if(fprimos[j] == 0) fprimos[j] = i;
-            }
-        }
+    for(long long i = 2; i*i < N; i++){
+        if(fprimos[i] == 0) fprimos[i] = i;
+        for (long long j = i*i; j < N; j+=i) fprimos[j] = fprimos[i];
     }
 }
+
