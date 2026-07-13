@@ -48,12 +48,97 @@ distance(v.begin(),it);
 
 ## Geometria
 
+### Circulo
+
+```cpp
+
+// Requer: Template (Vetor, EPS, Circle, Reta)
+// Obs: todas as funcoes aqui envolvem sqrt (interseccoes, tangentes, circuncentro),
+// entao usam long double mesmo se Vetor virar long long int.
+// Excecao: pointInCircle pode virar 100% inteira comparando distancia^2 com r^2
+// (troque "~(p-c.o) <= c.r+EPS" por "(p-c.o)*(p-c.o) <= c.r*c.r" com Vetor/r em long long).
+class Circle{
+    public:
+    Vetor o;
+    long double r;//Pode ser trocado por long long int junto com Vetor::x,y
+    Circle(Vetor p,long double raio): o(p),r(raio){ }
+    Circle(long double x,long double y,long double raio): o({x,y}),r(raio){ }
+    bool inCircle(Vetor p){//true se p esta dentro ou na borda
+        return ~(p-o) <= r+EPS;
+    }
+    long double area(){
+        return PI*r*r;
+    }
+    long double perimeter(){
+        return 2*PI*r;
+    }
+    
+    long double arco(long double angle){
+        return fabsl(angle*r);
+    }
+    long double arco(Vetor a,Vetor b){
+        long double cross = (b-o)^(a-o);
+        long double dot = (a-o)*(b-o);
+        return this->arco(atan2l(fabsl(cross),dot));
+    }
+};
+
+bool pointInCircle(Circle c, Vetor p){//true se p esta dentro ou na borda de c
+    return ~(p-c.o) <= c.r+EPS;
+}
+
+vector<Vetor> lineCircleIntersection(Reta r, Circle c){//0, 1 ou 2 pontos de interseccao
+    Vetor n=~r, dir=!r;
+    long double d=r.posicao(c.o)/(~n); // distancia (com sinal) do centro a reta
+    if(fabsl(d)>c.r+EPS) return {};
+    Vetor proj=c.o-(n/(~n))*d; // pe da perpendicular do centro na reta
+    long double h=sqrtl(max((long double)0.0,c.r*c.r-d*d));
+    Vetor u=dir/(~dir);
+    if(h<EPS) return {proj};
+    return {proj+u*h, proj-u*h};
+}
+
+vector<Vetor> circleCircleIntersection(Circle a, Circle b){//0, 1, 2 pontos (ou infinitos se coincidentes, retorna vazio)
+    Vetor d=b.o-a.o;
+    long double dist=~d;
+    if(dist<EPS) return {}; // concentricos: infinitas ou nenhuma interseccao
+    if(dist>a.r+b.r+EPS || dist<fabsl(a.r-b.r)-EPS) return {};
+    long double x=(dist*dist-b.r*b.r+a.r*a.r)/(2*dist); // distancia do centro a ate o ponto medio da corda
+    long double h2=a.r*a.r-x*x;
+    long double h=sqrtl(max((long double)0.0,h2));
+    Vetor u=d/dist, n={-u.y,u.x};
+    Vetor p=a.o+u*x;
+    if(h<EPS) return {p};
+    return {p+n*h, p-n*h};
+}
+
+Circle circumcircle(Vetor a, Vetor b, Vetor c){//circulo que passa por a, b e c; UB se a,b,c colineares (d==0)
+    Vetor ab=b-a, ac=c-a;
+    long double d=2*(ab^ac); // d==0 se colineares: verificar antes de chamar
+    long double ab2=ab*ab, ac2=ac*ac;
+    Vetor o={a.x+(ac.y*ab2-ab.y*ac2)/d, a.y+(ab.x*ac2-ac.x*ab2)/d};
+    return Circle(o, ~(o-a));
+}
+
+Circle incircle(Vetor a, Vetor b, Vetor c){
+    long double r=fabsl((a-b)^(b-c))/(~(a-b)+~(b-c)+~(c-a));
+    Vetor o=((c*~(a-b))+(a*~(b-c))+(b*~(c-a)))/(~(a-b)+~(b-c)+~(c-a));
+    return Circle(o,r);
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
 ### Convex-Hull
 
 ```cpp
 //Vai ser utilizado a classe Vetor
 //da classe Vetor - ^ == < pivot cmpPolar
 //ccw
+// Nao usa sqrt/divisao: se Vetor::x,y forem ll, este arquivo funciona sem alteracoes (exato).
+// ATENCAO: cmpPolar usa cross<0, entao ordena em sentido HORARIO a partir do pivot.
+// O resultado de convex_hull() esta em ordem HORARIA (nao anti-horaria).
 bool cw(Vetor a, Vetor b, Vetor c,bool include_linear){
     int o=ccw(a,b,c);
     return o<0||(include_linear&&o==0);
@@ -99,6 +184,7 @@ void convex_hull(vector<Vetor>& pts, bool include_collinear=false) {//O(nlogn)
 ```cpp
 
 // Requer: Template (Vetor, EPS, ccw)
+// Se Vetor::x,y forem ll, as margens +-EPS abaixo sao desnecessarias (comparacoes ficam exatas).
 bool onSegment(Vetor a, Vetor b, Vetor p) {//p pertence ao segmento ab
     return ccw(a,b,p)==0 &&
        min(a.x,b.x)-EPS <= p.x && p.x <= max(a.x,b.x)+EPS &&
@@ -116,6 +202,12 @@ bool intersect(Vetor a, Vetor b, Vetor c, Vetor d) {//segmentos ab e cd se inter
     return false;
 }
 
+//Segmento-Segmento
+long double distSS(Vetor a,Vetor b,Vetor c,Vetor d){
+    if(intersect(a,b,c,d)) return 0;
+    return min({a.dist(c,d),b.dist(c,d),c.dist(a,b),d.dist(a,b)});
+}
+
 ```
 
 <div style="page-break-after: always;"></div>
@@ -125,15 +217,25 @@ bool intersect(Vetor a, Vetor b, Vetor c, Vetor d) {//segmentos ab e cd se inter
 ```cpp
 
 // Requer: Template (Vetor, ccw)
-double area(vector<Vetor>& poly){//Funciona para poligonos convexos ou nao
-    double s=0;
+// Se Vetor::x,y forem ll, troque "long double s=0" por "ll s=0" (soma exata) e
+// "return fabsl(s)/2" por "return llabs(s)" retornando o dobro da area (evita .5 fracionario).
+long double area(vector<Vetor>& poly){//Funciona para poligonos convexos ou nao
+    long double s=0;
     int n=poly.size();
     for(int i=0;i<n;i++)
         s += poly[i] ^ poly[(i+1)%n];
-    return fabs(s)/2;
+    return fabsl(s)/2;
 }
 
-bool inPolygon(vector<Vetor> polygon,Vetor p){//Poligono convexo em anti-horario, O(log n)
+long double perimeter(vector<Vetor> &poly){
+    long double s=0;
+    int n=poly.size();
+    for(int i=0;i<n;i++)
+        s += ~(poly[i]-poly[(i+1)%n]);
+    return s;
+}
+
+bool inPolygon(vector<Vetor> &polygon,Vetor p){//Poligono convexo em anti-horario, O(log n)
     Vetor piv=polygon[0];
     if(p==piv) return true;
     if(ccw(p,piv,polygon[1])<0) return false;
@@ -151,44 +253,119 @@ bool inPolygon(vector<Vetor> polygon,Vetor p){//Poligono convexo em anti-horario
 
 <div style="page-break-after: always;"></div>
 
+### Raio
+
+```cpp
+
+// Requer: Template (Vetor, EPS, ccw), Reta e Interseccao (onSegment)
+// Raio: semirreta a partir de o na direcao d (nao precisa ser unitaria)
+// Se Vetor::x,y forem ll, troque "fabsl(v^d)>EPS" por "(v^d)!=0" (comparacao exata).
+class Raio{
+    public:
+    Vetor o,d;
+    Raio(Vetor origem, Vetor ponto): o(origem), d(ponto-origem) { }
+    long double dist(Vetor p) const{//distancia de p ate a semirreta
+        Vetor v=p-o;
+        if((v*d)<=0) return ~v; // projecao cai antes de o: ponto mais proximo eh o
+        Reta r(o,o+d);
+        return fabsl(r.dist(p));
+    }
+    long double dist(Raio smr) const{
+        Reta r1(o,o+d),r2(smr.o,smr.o+smr.d);
+        if(r1==r2){
+            if((d*smr.d)>0) return 0; // mesma direcao: sempre se sobrepoem
+            if((smr.o-o)*d>=-EPS) return 0; // direcoes opostas mas se alcancam
+            return ~(o-smr.o); // direcoes opostas, gap entre as origens
+        }
+        if(r1||r2) return min(this->dist(smr.o),smr.dist(o));
+        Vetor p=r1^r2;
+        if((p-o)*d>=-EPS && (p-smr.o)*smr.d>=-EPS) return 0;
+        return min(this->dist(smr.o),smr.dist(o));
+    }
+    long double dist(Reta r) const{
+        Reta r1(o,o+d);
+        if(r1||r) return r.dist(o);
+        Vetor p=r^r1;
+        if((p-o)*d<=0) return  r.dist(o);
+        else return 0;
+    }
+    bool intersect(Vetor p,Vetor q) const{//semirreta intersecta segmento pq
+        Reta r1(o,o+d),r2(p,q);
+        if(r1||r2){
+            if(!(r1==r2)) return false;
+            return (p-o)*d>=-EPS || (q-o)*d>=-EPS || onSegment(p,q,o);
+        }
+        Vetor x=r1^r2;
+        if((x-o)*d<-EPS) return false;
+        return onSegment(p,q,x);
+    }
+    long double dist(Vetor p,Vetor q) const{//Distancia da semirreta ao segmento pq
+        if(this->intersect(p,q)) return 0;
+        return min({this->dist(p),this->dist(q),o.dist(p,q)});
+    }
+};
+
+```
+
+<div style="page-break-after: always;"></div>
+
 ### Reta
 
 ```cpp
 
 // Requer: Template (Vetor, EPS)
 // Reta: ~=normal unitario !=direcao unitario posicao(p) dist(p) ||=paralelo ==igual ^=interseccao
+// a,b,c sao combinacoes lineares de coordenadas: se Vetor::x,y forem ll, troque a,b,c para ll
+// (posicao() fica exata). dist() e operator^ envolvem divisao/sqrt e devem seguir em long double.
 class Reta{//ax+by+c=0 | construida a partir de dois pontos
     public:
-    double a,b,c;
+    long double a,b,c;
     Reta(Vetor s,Vetor e){
         this->a=s.y-e.y;
         this->b=e.x-s.x;
         this->c=s^e;
     }
-    Vetor operator~() const{//Vetor normal unitario
+    Vetor operator~() const{//Vetor normal
         Vetor n={this->a,this->b};
-        return n/(~n);
+        return n;
     }
-    Vetor operator!() const{//Vetor direcao unitario
+    Vetor operator!() const{//Vetor direcao
         Vetor d={-this->b,this->a};
-        return d/(~d);
+        return d;
     }
-    double posicao(Vetor p){//=0 na reta, >0 ou <0 nos lados
+    long double posicao(Vetor p){//=0 na reta, >0 ou <0 nos lados
         return this->a*p.x+this->b*p.y+c;
     }
-    double dist(Vetor p){
-        return (this->posicao(p))/(~(~(*this)));
+    long double dist(Vetor p){
+        return fabsl(this->posicao(p))/(~(~(*this)));
     }
-    bool operator||(const Reta r)const {//true se paralelas
-        return (fabs(this->a*r.b - this->b*r.a) < EPS);
+    bool operator||(const Reta r)const {//true se paralelas ou iguais
+        return (fabsl(this->a*r.b - this->b*r.a) < EPS);
     }
     bool operator==(const Reta& l) const {
-        return fabs(this->a*l.b - this->b*l.a) < EPS &&
-            fabs(this->a*l.c - this->c*l.a) < EPS &&
-            fabs(this->b*l.c - this->c*l.b) < EPS;
+        return fabsl(this->a*l.b - this->b*l.a) < EPS &&
+            fabsl(this->a*l.c - this->c*l.a) < EPS &&
+            fabsl(this->b*l.c - this->c*l.b) < EPS;
     }
-    Vetor operator^(Reta r){//Ponto de interseccao (verificar && antes)
-        double det=this->a*r.b-this->b*r.a;
+    bool intersect(Vetor a,Vetor b){//Reta intersecta segmento
+        long double pa=this->posicao(a),pb=this->posicao(b);
+        if((pa>0&&pb<0)||(pa<0&&pb>0)||(fabs(pa)<EPS||fabs(pb)<EPS)) return true;
+        return false;
+    }
+    long double dist(Vetor p,Vetor q){//Distancia da reta ao segmento pq
+        if(this->intersect(p,q)) return 0;
+        return min(this->dist(p),this->dist(q));
+    }
+    long double dist(Reta r){//Distancia entre retas
+        if(!(*this==r) && (*this||r)){
+            long double d2=this->a*this->a+this->b*this->b;
+            Vetor p={-this->a*this->c/d2,-this->b*this->c/d2};//ponto qualquer desta reta
+            return r.dist(p);
+        }
+        return 0;
+    }
+    Vetor operator^(Reta r){//Ponto de interseccao (verificar || antes)
+        long double det=this->a*r.b-this->b*r.a;
         Vetor ponto={-(this->c*r.b-this->b*r.c)/det,-(this->a*r.c-this->c*r.a)/det};
         return ponto;
     }
@@ -203,39 +380,43 @@ class Reta{//ax+by+c=0 | construida a partir de dois pontos
 ```cpp
 
 typedef long long int ll;
-const double EPS = 1e-9;
-const double PI = acos(-1);
+const long double EPS = 1e-9;
+const long double PI = acosl(-1);
 
-// Vetor: +(add) -(sub) *(double)=escala *(Vetor)=dot ^=cross ~=modulo dist(p,q)=dist ao segmento pq
+// Vetor: +(add) -(sub) *(long double)=escala *(Vetor)=dot ^=cross ~=modulo dist(p,q)=dist ao segmento pq
 // cmpPolar: usar com sort + Vetor::pivot para ordenar por angulo polar
+// Para coordenadas inteiras: troque x,y (e Circle::r) para ll. operator*, operator^ e cmpPolar
+// continuam exatos em ll; operator~, dist e o construtor de Reta/funcoes de Circulo que usam
+// sqrt seguem precisando de long double (faca o calculo em ll e converta na hora do sqrt).
 class Vetor{
     public:
-    double x,y;//Pode ser trocado por long long int dependendo da questao
+    long double x,y;//Pode ser trocado por long long int dependendo da questao
     Vetor operator+(Vetor q) const{
         return {this->x+q.x,this->y+q.y};
     }
     Vetor operator-(Vetor q) const{
         return {this->x-q.x,this->y-q.y};
     }
-    Vetor operator*(double k) const{//Escalar * vetor
+    Vetor operator*(long double k) const{//Escalar * vetor
         return {this->x*k,this->y*k};
     }
-    Vetor operator/(double k) const{//Vetor / escalar
+    Vetor operator/(long double k) const{//Vetor / escalar
         return {this->x/k,this->y/k};
     }
-    double operator*(Vetor q) const{//Produto escalar
+    long double operator*(Vetor q) const{//Produto escalar
         return this->x*q.x+this->y*q.y;
     }
-    double operator^(Vetor q) const{//Produto vetorial
+    long double operator^(Vetor q) const{//Produto vetorial
         return this->x*q.y-q.x*this->y;
     }
-    double operator~() const{//Modulo / distancia da origem
-        return sqrt((*this)*(*this));
+    long double operator~() const{//Modulo / distancia da origem
+        return sqrtl((*this)*(*this));
     }
-    double dist(Vetor p,Vetor q) const{//Distancia de *this ao segmento pq
+    long double dist(Vetor p,Vetor q) const{//Distancia de *this ao segmento pq
         Vetor r=*this;
+        // dot<=0: projecao cai antes de p (ou apos q), entao o extremo mais proximo eh p (ou q)
         if((q-p)*(r-p)<=0||(p-q)*(r-q)<=0) return min(~(r-p),~(r-q));
-        else return abs(((r-p)^(q-p))/(~(q-p)));
+        else return fabsl(((r-p)^(q-p))/(~(q-p)));
     }
     bool operator==(const Vetor p)const {
         return fabs(this->x - p.x) < EPS && fabs(this->y - p.y) < EPS;
@@ -244,14 +425,14 @@ class Vetor{
         return !(*this==p);
     }
     bool operator<(const Vetor p)const {
-        if(this->x!=p.x) return this->x<p.x;
-        return this->y<p.y;
+        if(fabsl(this->x - p.x) >= EPS) return this->x < p.x;
+        return this->y < p.y;
     }
     static Vetor pivot;
     static bool cmpPolar(const Vetor& a, const Vetor& b){//Ordena por angulo polar a partir de pivot
         Vetor A = {a.x - pivot.x, a.y - pivot.y};
         Vetor B = {b.x - pivot.x, b.y - pivot.y};
-        ll cross = A ^ B;
+        long double cross = A ^ B; // se x,y forem ll, troque para "ll cross = A ^ B" (operacao exata)
         if(cross == 0)
             return (A.x*A.x + A.y*A.y) < (B.x*B.x + B.y*B.y);
         return cross < 0; // <0 horario, >0 anti-horario
@@ -260,22 +441,14 @@ class Vetor{
 Vetor Vetor::pivot = {0,0};
 
 Vetor centroide(const vector<Vetor>& pts){
-    ll sx=0, sy=0;
+    long double sx=0, sy=0;
     for(auto &p: pts){ sx += p.x; sy += p.y; }
-    return {sx/(ll)pts.size(), sy/(ll)pts.size()};
+    return {sx/pts.size(), sy/pts.size()};
 }
 
-class Circle{
-    public:
-    Vetor o;
-    double r;
-    Circle(Vetor p,double raio): o(p),r(raio){ }
-    Circle(double x,double y,double raio): o({x,y}),r(raio){ }
-};
-
 int ccw(Vetor a, Vetor b, Vetor c) {//1=esquerda, -1=direita, 0=colinear
-    double cross = (b-a)^(c-a);
-    if(fabs(cross) < EPS) return 0;
+    long double cross = (b-a)^(c-a); // se x,y forem ll, troque para "ll cross" e "if(cross==0) return 0;" (sem EPS)
+    if(fabsl(cross) < EPS) return 0;
     return cross > 0 ? 1 : -1;
 }
 
@@ -379,6 +552,7 @@ int DFS(int v,int nivel){//DFS com tempo de in e out, detecta ciclo e permite di
 }
 
 void dfs(int v,int par){//dfs com lowlink e dis para deteccao de pontes e pontos de articulacao
+    // parentEdge ignora apenas UMA aresta de volta ao pai; em multigrafos arestas paralelas ao pai nao sao ignoradas
     bool parentEdge=false;
     int children=0;
     dis[v] = low[v] = cnt++;
@@ -413,7 +587,7 @@ typedef vector<ii> vii;
 typedef vector<int> vi;
 
 vii adj[SIZE];
-vi custo(SIZE, INF);
+vi custo(SIZE, INF); // resetar com fill(custo.begin(), custo.end(), INF) entre chamadas
 
 void dijkstra(int s){
     custo[s] = 0;
@@ -560,7 +734,7 @@ void addEdge(int a,int b,int c){
     g[a].push_back(edges.size());
     edges.push_back(Edge{b,c});
     g[b].push_back(edges.size());
-    edges.push_back(Edge{a,c}); // Para arestas direcionadas use capacidade 0 na aresta reversa
+    edges.push_back(Edge{a,0}); // aresta reversa com cap 0 (grafo direcionado); para nao-direcionado chame addEdge(b,a,c) separadamente
 }
 //Roda BFS para pegar o caminho
 int BFS(int ini, int fim){ // 1 se tiver caminho, 0 caso nao
@@ -647,9 +821,135 @@ bool floydWarshall(int n){
                     custo[i][j] = custo[i][k] + custo[k][j];
             }
             if (custo[i][i]< 0)
-                return true;
+                return true; // retorno antecipado: matriz custo incompleta, nao usar apos true
         }
     return false;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### Heavy-Light-Decomposition
+
+```cpp
+
+const int MAXN = 100005;
+
+// --- Segment Tree with Lazy Propagation (range assign, range sum) ---
+int seg[4*MAXN], lz[4*MAXN];
+bool dirty[4*MAXN];
+
+void push_down(int node, int l, int r) {
+    if (!dirty[node]) return;
+    int mid = (l + r) / 2;
+    seg[node] = (r - l + 1) * lz[node];//Range assign, += if range increment
+    if (l != r) {
+        for (int c : {2*node, 2*node+1}) { lz[c] = lz[node]; dirty[c] = true; }
+    }
+    dirty[node] = false;
+}
+
+void seg_update(int node, int l, int r, int ql, int qr, int val) {
+    push_down(node, l, r);
+    if (ql > r || qr < l) return;
+    if (ql <= l && r <= qr) { lz[node] = val; dirty[node] = true; push_down(node, l, r); return; }
+    int mid = (l + r) / 2;
+    seg_update(2*node, l, mid, ql, qr, val);
+    seg_update(2*node+1, mid+1, r, ql, qr, val);
+    seg[node] = seg[2*node] + seg[2*node+1];//Sum
+}
+
+int seg_query(int node, int l, int r, int ql, int qr) {
+    push_down(node, l, r);
+    if (ql > r || qr < l) return 0;
+    if (ql <= l && r <= qr) return seg[node];
+    int mid = (l + r) / 2;
+    return seg_query(2*node, l, mid, ql, qr) + seg_query(2*node+1, mid+1, r, ql, qr);//Sum
+}
+
+// --- HLD ---
+int sz[MAXN], dep[MAXN], pai[MAXN], nxt[MAXN], tin[MAXN];
+vector<int> g[MAXN];
+int timer_hld = 0;
+
+void dfs_sz(int v, int p) {
+    sz[v] = 1; pai[v] = p;
+    for (auto& u : g[v]) {
+        if (u == p) continue;
+        dep[u] = dep[v] + 1;
+        dfs_sz(u, v);
+        sz[v] += sz[u];
+        if (sz[u] > sz[g[v][0]] || g[v][0] == p) swap(u, g[v][0]);
+    }
+}
+
+void dfs_hld(int v, int p, int h) {
+    nxt[v] = h; tin[v] = timer_hld++;
+    for (auto u : g[v]) {
+        if (u == p) continue;
+        dfs_hld(u, v, u == g[v][0] ? h : u);
+    }
+}
+
+// Path query (sum) from u to v
+int query_path(int u, int v, int n) {
+    int res = 0;
+    while(nxt[u] != nxt[v]) {
+        if (dep[nxt[u]] < dep[nxt[v]]) swap(u, v);
+        res += seg_query(1, 0, n-1, tin[nxt[u]], tin[u]);
+        u = pai[nxt[u]];
+    }
+    if (dep[u] > dep[v]) swap(u, v);
+    res += seg_query(1, 0, n-1, tin[u], tin[v]);
+    return res;
+}
+
+// Path update (range assign) from u to v
+void update_path(int u, int v, int val, int n) {
+    while(nxt[u] != nxt[v]) {
+        if (dep[nxt[u]] < dep[nxt[v]]) swap(u, v);
+        seg_update(1, 0, n-1, tin[nxt[u]], tin[u], val);
+        u = pai[nxt[u]];
+    }
+    if (dep[u] > dep[v]) swap(u, v);
+    seg_update(1, 0, n-1, tin[u], tin[v], val);
+}
+
+// Subtree query
+int query_subtree(int v, int n) {
+    return seg_query(1, 0, n-1, tin[v], tin[v] + sz[v] - 1);
+}
+
+//Range assign subtree
+void update_subtree(int v,int val,int n){
+    return seg_update(1,0,n-1,tin[v],tin[v]+sz[v]-1,val);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin >> n >> q;
+
+    for (int i = 0; i < n-1; i++) {
+        int u, v; cin >> u >> v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+
+    dep[1] = 0;
+    dfs_sz(1, 1);
+    dfs_hld(1, 1, 1);
+
+    while (q--) {
+        int t, u, v; cin >> t >> u >> v;
+        if (t == 1) update_path(u, v, /* val */ 1, n);
+        else        cout << query_path(u, v, n) << '\n';
+    }
+
+    return 0;
 }
 
 ```
@@ -738,6 +1038,74 @@ int lca(int x,int y){
         }
     }
     return memo[0][x];
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
+### MatchingBipartido
+
+```cpp
+
+// Kuhn's Algorithm — Maximum Bipartite Matching
+// Problem: given two groups L (left) and R (right) with edges between them,
+// find the largest set of edges where every vertex appears at most once.
+
+const int NONE = -1;
+
+int L, R;                       // number of left and right vertices
+vector<int> adj[505];           // adj[u] = list of right vertices u can match to
+int matchL[505], matchR[505];   // matchL[u] = right vertex matched to u, and vice versa
+
+// DFS from left vertex u looking for an augmenting path.
+// Returns true if an augmenting path was found (and the matching was updated).
+bool tryAugment(int u, vector<bool>& visited) {
+    for (int v : adj[u]) {
+        if (visited[v]) continue;   // already tried to re-route through v in this DFS
+        visited[v] = true;
+
+        // v is unmatched — we can directly match u to v
+        // v is matched to matchR[v] — ask matchR[v] if it can go elsewhere
+        if (matchR[v] == NONE || tryAugment(matchR[v], visited)) {
+            // augmenting path found: update the matching
+            matchL[u] = v;
+            matchR[v] = u;
+            return true;
+        }
+    }
+    return false;   // no augmenting path from u
+}
+
+int maxMatching() {
+    fill(matchL, matchL + L, NONE);
+    fill(matchR, matchR + R, NONE);
+
+    int result = 0;
+    for (int u = 0; u < L; u++) {
+        // visited is reset for each left vertex so that each DFS call
+        // gets a fresh chance to reroute right vertices
+        vector<bool> visited(R, false);
+        if (tryAugment(u, visited))
+            result++;
+    }
+    return result;
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    L = 3; R = 3;
+    adj[0] = {0, 1};
+    adj[1] = {1};
+    adj[2] = {1, 2};
+
+    cout << "Maximum matching: " << maxMatching() << "\n";
+    for (int u = 0; u < L; u++)
+        if (matchL[u] != NONE)
+            cout << "  Worker " << u << " -> Job " << matchL[u] << "\n";
+
+    return 0;
 }
 
 ```
@@ -882,35 +1250,32 @@ bool topological_sort(int n) {//Ordena topologicamente e caso seja impossivel re
 
 ```cpp
 #define MAXN 10000
-//O(1) ná media, pior caso O(logn)
-int parent[MAXN];
-int w[MAXN];
+//O(1) na media, pior caso O(logn)
 
-int find_set(int v)
-{
-    if (v == parent[v])
-        return v;
-    return parent[v] = find_set(parent[v]);
-}
+struct UnionFind {
+    int parent[MAXN];
+    int w[MAXN];
 
-void make_set(int v)
-{
-    parent[v] = v;
-    w[v] = 1;
-}
-
-void union_sets(int a, int b)
-{
-    a = find_set(a);
-    b = find_set(b);
-    if (a != b)
-    {
-        if (w[a] < w[b])
-            swap(a, b);
-        parent[b] = a;
-        w[a] += w[b];
+    int find_set(int v) {
+        if (v == parent[v]) return v;
+        return parent[v] = find_set(parent[v]);
     }
-}
+
+    void make_set(int v) {
+        parent[v] = v;
+        w[v] = 1;
+    }
+
+    void union_sets(int a, int b) {
+        a = find_set(a);
+        b = find_set(b);
+        if (a != b) {
+            if (w[a] < w[b]) swap(a, b);
+            parent[b] = a;
+            w[a] += w[b];
+        }
+    }
+};
 
 ```
 
@@ -1053,6 +1418,7 @@ void solver(int n){
 
 ```cpp
 // Cria um vetor de fatores primos / todos os primos ate N
+// fprimos[i] = menor fator primo de i (fprimos[primo] = primo, fprimos[0]=fprimos[1]=1)
 //O(n)
 const int N=11234567;
 int fprimos[N]; // inicializa com 0
@@ -1060,9 +1426,9 @@ int fprimos[N]; // inicializa com 0
 //p!=primo fprimos[p]&&fprimos[p]!=p
 void crivo(){
     fprimos[0] = fprimos[1] = 1;
-    for(int i = 2; i*i < N; i++){
+    for(long long i = 2; i*i < N; i++){
         if(fprimos[i] == 0) fprimos[i] = i;
-        for (int j = i*i; j < N; j+=i) fprimos[j] = fprimos[i];
+        for (long long j = i*i; j < N; j+=i) fprimos[j] = fprimos[i];
     }
 }
 
@@ -1078,9 +1444,9 @@ struct Congruence {
     long long a, m;
 };
 //Calcular Chinese Remainder Theorem, usa inverso modular
-long long mod_inv(long long a, long long m) {//O(m)
+long long mod_inv(long long a, long long m) {//O(log m)
     if (a <= 1) return a;
-    return m - (mod_inv(m % a, a) * (m / a) % m);
+    return m - (mod_inv(m % a, m) * (m / a) % m);
 }
 
 long long chinese_remainder_theorem(vector<Congruence> const& congruences) {//O(m*sizeof(congruences)
@@ -1180,6 +1546,7 @@ int carry = 0;
 ```cpp
 //Potenciação rapida
 //O(logn) n sendo power
+// Sem reducao modular; para potencia modular adicione % MOD nas duas multiplicacoes
 long long fast_power(long long base, long long power) {
     long long result = 1;
     while(power > 0) {
@@ -1209,6 +1576,12 @@ double sol[NMAX];
 void elimination(int n){
     double factor;
     for (int i = 0; i < n - 1; i++){
+        // pivotar pela linha com maior valor absoluto na coluna i
+        int mx = i;
+        for (int j = i+1; j < n; j++)
+            if (fabs(mat[j][i]) > fabs(mat[mx][i])) mx = j;
+        if (mx != i) swap(mat[mx], mat[i]);
+        if (fabs(mat[i][i]) < 1e-12) continue; // coluna singular
         for (int j = i+1; j < n; j++){
             factor = mat[j][i]/mat[i][i];
             for (int k = 0; k < n + 1; k++){
@@ -1293,6 +1666,118 @@ vector<char> segmentedSieve(long long L, long long R)
 
 ## Programacao-Dinamica
 
+### ConvexHullTrick
+
+```cpp
+typedef long long ll;
+
+// O(n) or O(n log n) DP optimization
+// Optimizes DP transitions of the form:
+//   dp[i] = min over j of:  dp[j] + a[j] * x[i] + b[j]
+// Each j defines a line:  y = a[j] * X + b[j]
+// For a fixed query X = x[i], we want the minimum y among all lines.
+// Only lines on the "lower envelope" can ever be optimal.
+// The lower envelope, read left to right, is ordered largest slope → smallest slope.
+// When slopes are added in DECREASING order AND queries are in INCREASING order,
+// the optimal line index only moves forward → amortized O(1) per operation.
+// For arbitrary query order, use the binary-search variant: O(log n) per query.
+
+struct Line {
+    ll m, b;
+    ll eval(ll x) const { return m * x + b; }
+};
+
+// Returns true if line B is made redundant by lines A (left) and C (right).
+bool bad(Line A, Line B, Line C) {
+    return (__int128)(C.b - A.b) * (A.m - B.m) <= (__int128)(B.b - A.b) * (A.m - C.m);
+}
+
+
+// REQUIREMENT: addLine must be called with slopes in DECREASING order.
+// REQUIREMENT: query must be called with x values in NON-DECREASING order.
+//   hull[0] has the steepest slope → optimal for the smallest x values.
+//   As x grows, the optimal line shifts rightward in the hull.
+struct CHT_Monotone {
+    vector<Line> hull;
+    int ptr = 0;  // points to the current best line; only moves right
+
+    void addLine(ll slope, ll intercept) {
+        Line L = {slope, intercept};
+        // Remove the last hull line if C makes it redundant.
+        while (hull.size() >= 2 && bad(hull[hull.size()-2], hull[hull.size()-1], L))
+            hull.pop_back();
+        hull.push_back(L);
+    }
+
+    // x must be non-decreasing across successive calls.
+    ll query(ll x) {
+        // Once hull[ptr] is no longer beaten by hull[ptr+1], we stop
+        while (ptr + 1 < (int)hull.size() && hull[ptr].eval(x) >= hull[ptr+1].eval(x))
+            ptr++;
+        return hull[ptr].eval(x);
+    }
+};
+
+// Same envelope construction, but instead of a moving pointer we binary search.
+// Slopes must still be added in DECREASING order; queries can be in any order.
+struct CHT_BinarySearch {
+    vector<Line> hull;
+
+    void addLine(ll slope, ll intercept) {
+        Line L = {slope, intercept};
+        while (hull.size() >= 2 && bad(hull[hull.size()-2], hull[hull.size()-1], L))
+            hull.pop_back();
+        hull.push_back(L);
+    }
+
+    ll query(ll x) {
+        int lo = 0, hi = (int)hull.size() - 1;
+        while (lo < hi) {
+            int mid = (lo + hi) / 2;
+            // If the next line is already better at x, the optimal is to the right
+            if (hull[mid].eval(x) >= hull[mid+1].eval(x))
+                lo = mid + 1;
+            else
+                hi = mid;
+        }
+        return hull[lo].eval(x);
+    }
+};
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    // --- Simple demo: minimum of a set of lines ---
+
+    CHT_Monotone cht;
+    cht.addLine(3, 1);    // slope 3  (steepest, good for small x)
+    cht.addLine(1, 5);    // slope 1
+    cht.addLine(-1, 9);   // slope -1 (shallowest, good for large x)
+
+    cout << "CHT Monotone (min of 3 lines, queries in increasing x):\n";
+    cout << "x=0: " << cht.query(0) << " (expected 1)\n";
+    cout << "x=2: " << cht.query(2) << " (expected 7)\n";
+    cout << "x=4: " << cht.query(4) << " (expected 5)\n";
+    cout << "x=6: " << cht.query(6) << " (expected 3)\n";
+
+    // Same demo with binary search (queries can come in any order)
+    CHT_BinarySearch cht2;
+    cht2.addLine(3, 1);
+    cht2.addLine(1, 5);
+    cht2.addLine(-1, 9);
+
+    cout << "\nCHT Binary Search (same lines, arbitrary query order):\n";
+    cout << "x=6: " << cht2.query(6) << " (expected 3)\n";
+    cout << "x=0: " << cht2.query(0) << " (expected 1)\n";
+    cout << "x=4: " << cht2.query(4) << " (expected 5)\n";
+    return 0;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
 ### EditDistance
 
 ```cpp
@@ -1345,30 +1830,32 @@ int editDistance(string s1, string s2)
 // range query soma
 //O(logn)
 #define NMAX 1000
-int BIT[NMAX];
 
-void updateBIT(int tam, int index, int valor){
-    index++;
-    while (index <= tam){
-        BIT[index] += valor;
-        index += index & (-index);
+struct Fenwick {
+    int BIT[NMAX];
+
+    void update(int tam, int index, int valor) {
+        index++;
+        while (index <= tam) {
+            BIT[index] += valor;
+            index += index & (-index);
+        }
     }
-}
 
-void buildBIT(int  *vet, int tam){
-    int i;
-    memset(BIT, 0, sizeof(BIT));
-    for (i = 0; i < tam; i++) updateBIT(tam, i, vet[i]);
-}
-
-int queryBIT(int index){
-    int soma = 0;
-    while(index > 0){
-        soma += BIT[index];
-        index -= index & (-index);
+    void build(int* vet, int tam) {
+        memset(BIT, 0, sizeof(BIT));
+        for (int i = 0; i < tam; i++) update(tam, i, vet[i]);
     }
-    return soma;
-}
+
+    int query(int index) {
+        int soma = 0;
+        while (index > 0) {
+            soma += BIT[index];
+            index -= index & (-index);
+        }
+        return soma;
+    }
+};
 
 ```
 
@@ -1444,6 +1931,7 @@ vector<int> escolhidos(int W, int n){
 
 ```cpp
 //O(nlogn)
+// dp[0] = -INF sentinela: evita acesso a dp[-1] quando a[v] e menor que todos os elementos
 #define MAXN 100100
 const int INF = 1e9;
 
@@ -1451,11 +1939,11 @@ int a[MAXN];
 vector<int> tree[MAXN];
 int r[MAXN];
 int vis[MAXN];
-vector<int> dp(MAXN, INF);
+vector<int> dp = []{vector<int> v(MAXN+1, INF); v[0]=INT_MIN; return v;}(); // dp[0]=sentinela; dp[1..] LIS
 void dfs(int v)
 {
     vis[v] = 1;
-    int l = upper_bound(dp.begin(), dp.end(), a[v]) - dp.begin(); // índice do primeiro elemento em dp maior que a[i]
+    int l = upper_bound(dp.begin()+1, dp.end(), a[v]) - dp.begin(); // 1-indexed: dp[1..] armazena a LIS
     int ant = dp[l];
     if (dp[l - 1] < a[v] && a[v] < dp[l])
     {
@@ -1468,7 +1956,7 @@ void dfs(int v)
             dfs(u);
         }
     }
-    r[v] = lower_bound(dp.begin(), dp.end(), INF) - dp.begin() - 1; // comprimento da LIS da raiz ao vértice v
+    r[v] = lower_bound(dp.begin()+1, dp.end(), INF) - dp.begin() - 1; // comprimento da LIS da raiz ao vértice v
     dp[l] = ant;
 }
 
@@ -1485,6 +1973,7 @@ int LIS(vector<int>& arr)
 {
     // Binary search approach
     int n = arr.size();
+    if (n == 0) return 0;
     vector<int> ans;
     ans.push_back(arr[0]);
     for(int i=1;i<arr.size();i++){
@@ -1578,12 +2067,8 @@ struct node
     }
 };
 
-int arr[N];
-
-node* version[N];
-
 //O(nlogn)
-void build(node* n,int low,int high)
+void build(node* n, int low, int high, int* arr)
 {
     if (low==high)
     {
@@ -1593,8 +2078,8 @@ void build(node* n,int low,int high)
     int mid = (low+high) / 2;
     n->left = new node(NULL, NULL, 0);
     n->right = new node(NULL, NULL, 0);
-    build(n->left, low, mid);
-    build(n->right, mid+1, high);
+    build(n->left, low, mid, arr);
+    build(n->right, mid+1, high, arr);
     n->val = n->left->val + n->right->val;
 }
 
@@ -1654,13 +2139,11 @@ int main(int argc, char const *argv[])
 {
     int A[] = {1,2,3,4,5};
     int n = sizeof(A)/sizeof(int);
-
-    for (int i=0; i<n; i++) 
-       arr[i] = A[i];
+    node* version[N];
 
     // creating Version-0
     node* root = new node(NULL, NULL, 0);
-    build(root, 0, n-1);
+    build(root, 0, n-1, A);
 
     // storing root node for version-0
     version[0] = root;
@@ -1679,79 +2162,174 @@ int main(int argc, char const *argv[])
 
 <div style="page-break-after: always;"></div>
 
+### SQRT-Decomposition
+
+```cpp
+
+// Sqrt Decomposition for range queries with point updates.
+// Core idea: divide the array into blocks of size ~sqrt(n).
+// Query [l, r]:
+//   - Left partial block  : iterate element by element
+//   - Full blocks in middle: use precomputed block sum directly
+//   - Right partial block  : iterate element by element
+//   Cost: O(sqrt(n))
+// Update index i:
+//   - Update the element and adjust its block sum by the delta
+//   Cost: O(1)
+// Better than segment tree when the operation is hard to merge (distinct count, median)
+
+struct SqrtDecomp {
+    int n, B;           // array size, block size
+    vector<long long> a;       // original array
+    vector<long long> block;   // block[i] = sum of elements in block i
+
+    SqrtDecomp(vector<int>& arr) {
+        n = arr.size();
+        B = max(1, (int)sqrt(n));   // block size ~ sqrt(n)
+        a.assign(arr.begin(), arr.end());
+        block.assign((n + B - 1) / B, 0);
+
+        // Precompute block sums in O(n)
+        for (int i = 0; i < n; i++)
+            block[i / B] += a[i];
+    }
+
+    // Update a[i] to val in O(1)
+    void update(int i, long long val) {
+        block[i / B] += val - a[i];  // adjust block sum by the delta
+        a[i] = val;
+    }
+
+    // Sum of a[l..r] in O(sqrt(n))
+    long long query(int l, int r) {
+        long long sum = 0;
+        int lb = l / B;   // block containing l
+        int rb = r / B;   // block containing r
+
+        if (lb == rb) {
+            // l and r are in the same block — just iterate
+            for (int i = l; i <= r; i++)
+                sum += a[i];
+            return sum;
+        }
+
+        // Left partial block: from l to the end of block lb
+        for (int i = l; i < (lb + 1) * B; i++)
+            sum += a[i];
+
+        // Full blocks in between: O(n/B) = O(sqrt(n)) iterations
+        for (int b = lb + 1; b < rb; b++)
+            sum += block[b];
+
+        // Right partial block: from start of block rb to r
+        for (int i = rb * B; i <= r; i++)
+            sum += a[i];
+
+        return sum;
+    }
+};
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    vector<int> arr = {1, 3, 2, 7, 4, 6, 5, 8, 2, 3};
+    SqrtDecomp sd(arr);
+    sd.query(2, 7);//Query from position 2 to 7
+    sd.update(3, 10);//Update element in position 3 to 10
+    sd.query(2, 7);
+    sd.query(0, 9);
+
+    return 0;
+}
+
+```
+
+<div style="page-break-after: always;"></div>
+
 ### Segment-Tree-Lazy-Propagation
 
 ```cpp
 // range query/update, soma
 //O(n)
 const int maxn = 1000100;
-int vet[maxn], tree[4 * maxn], lz[4 * maxn];
 
-void build(int node, int l, int r)
-{
-    if (l == r)
+struct SegTree {
+    int tree[4 * maxn], lz[4 * maxn];
+
+    void build(int* vet, int node, int l, int r)
     {
-        tree[node] = vet[l];
-        return;
+        lz[node] = 0;
+        if (l == r)
+        {
+            tree[node] = vet[l];
+            return;
+        }
+        int mid = (l + r) / 2;
+        build(vet, 2 * node + 1, l, mid);
+        build(vet, 2 * node + 2, mid + 1, r);
+        tree[node] = tree[2 * node + 1] + tree[2 * node + 2];
     }
-    int mid = (l + r) / 2;
-    build(2 * node + 1, l, mid);
-    build(2 * node + 2, mid + 1, r);
-    tree[node] = tree[2 * node + 1] + tree[2 * node + 2];
-}
 
-void unlazy(int node, int tl, int tr)
-{
-    if (lz[node] == 0)
-        return;
-    tree[node] += (tr - tl + 1) * lz[node];
-    if (tl != tr)
+    void unlazy(int node, int tl, int tr)
     {
-        lz[2 * node + 1] += lz[node];
-        lz[2 * node + 2] += lz[node];
+        if (lz[node] == 0)
+            return;
+        tree[node] += (tr - tl + 1) * lz[node];
+        if (tl != tr)
+        {
+            lz[2 * node + 1] += lz[node];
+            lz[2 * node + 2] += lz[node];
+        }
+        lz[node] = 0;
     }
-    lz[node] = 0;
-}
 
-void update(int node, int tl, int tr, int l, int r, int v)
-{
-    unlazy(node, tl, tr);
-    if (tl > r || tr < l)
-        return;
-    if (tl >= l && tr <= r)
+    void update(int node, int tl, int tr, int l, int r, int v)
     {
-        lz[node] += v;
         unlazy(node, tl, tr);
-        return;
+        if (tl > r || tr < l)
+            return;
+        if (tl >= l && tr <= r)
+        {
+            lz[node] += v;
+            unlazy(node, tl, tr);
+            return;
+        }
+        int mid = (tl + tr) / 2;
+        update(2 * node + 1, tl, mid, l, r, v);
+        update(2 * node + 2, mid + 1, tr, l, r, v);
+        tree[node] = tree[2 * node + 1] + tree[2 * node + 2];
     }
-    int mid = (tl + tr) / 2;
-    update(2 * node + 1, tl, mid, l, r, v);
-    update(2 * node + 2, mid + 1, tr, l, r, v);
-    tree[node] = tree[2 * node + 1] + tree[2 * node + 2];
-}
 
-int query(int node, int tl, int tr, int l, int r)
-{
-    unlazy(node, tl, tr);
-    if (r < tl || l > tr)
-        return 0;
-    if (l <= tl && r >= tr)
-        return tree[node];
-    int mid = (tl + tr) / 2;
-    return query(2 * node + 1, tl, mid, l, r) +
-           query(2 * node + 2, mid + 1, tr, l, r);
-}
+    int query(int node, int tl, int tr, int l, int r)
+    {
+        unlazy(node, tl, tr);
+        if (r < tl || l > tr)
+            return 0;
+        if (l <= tl && r >= tr)
+            return tree[node];
+        int mid = (tl + tr) / 2;
+        return query(2 * node + 1, tl, mid, l, r) +
+               query(2 * node + 2, mid + 1, tr, l, r);
+    }
+};
+
+// Must be global — each instance is ~32 MB, stack cannot hold it
+SegTree st1, st2;
 
 int main()
 {
     int n = 5; // tamanho do vetor
-    for (int i = 0; i < n; i++)
-        vet[i] = 0;
-    build(0, 0, n - 1);
-    // Incrementa 3 no intervalo [1, 3]
-    update(0, 0, n - 1, 1, 3, 3);
-    // Soma total do intervalo [0, 4] -> deve ser 9 (0+3+3+3+0)
-    cout << "Soma de [0, 4]: " << query(0, 0, n - 1, 0, 4) << '\n';
+    int A[n], B[n];
+    for (int i = 0; i < n; i++) A[i] = 0;
+    for (int i = 0; i < n; i++) B[i] = 0;
+    st1.build(A, 0, 0, n - 1);
+    st2.build(B, 0, 0, n - 1);
+    // Incrementa 3 no intervalo [1, 3] em st1
+    st1.update(0, 0, n - 1, 1, 3, 3);
+    // Soma total do intervalo [0, 4] de st1 -> deve ser 9 (0+3+3+3+0)
+    cout << "st1 [0, 4]: " << st1.query(0, 0, n - 1, 0, 4) << '\n';
+    // st2 nao foi alterada
+    cout << "st2 [0, 4]: " << st2.query(0, 0, n - 1, 0, 4) << '\n';
     return 0;
 }
 
@@ -1765,20 +2343,19 @@ int main()
 // range query multiplicacao
 //O(nlogn)
 const int N=1123;
-int vet[N];
 struct tree{
     tree *esq, *dir;
     int from, to, valor;
     tree(int _from, int _to):from(_from), to(_to), dir(NULL), esq(NULL), valor(1){}
 };
 
-tree * build(int e, int d){
+tree * build(int e, int d, int* vet){
     if (e > d) return NULL;
     tree *res = new tree(e,d);
     if (e == d) res->valor = vet[e];
     else{
         int m = (e+d)/2;
-        res->esq = build(e, m); res->dir = build(m+1, d);
+        res->esq = build(e, m, vet); res->dir = build(m+1, d, vet);
         if (res->esq != NULL) res->valor *= res->esq->valor;
         if (res->dir != NULL) res->valor *= res->dir->valor;
     }
@@ -1810,39 +2387,40 @@ int update(tree *arv, int i, int valor){
 //O(nlogn) construcao O(1)ouO(logn) para querys
 const int K=21;
 const int N=112345;
-int st[K + 1][N];
-int lg[N + 1];
-vector<int> v;
 
-int f(int a,int b){//Funcao das querys
-    return min(a,b);
-}
-void build(){
-    copy(v.begin(), v.end(), st[0]);
-    lg[1] = 0;
-    for (int i = 2; i <= N; i++)
-        lg[i] = lg[i/2] + 1;
+// Must be global — each instance is ~10 MB, stack cannot hold it
+struct SparseTable {
+    int st[K + 1][N];
+    int lg[N + 1];
 
-    for (int i = 1; i <= K; i++)
-        for (int j = 0; j + (1 << i) <= N; j++)
-            st[i][j] = f(st[i - 1][j], st[i - 1][j + (1 << (i - 1))]);
-}
+    int f(int a, int b) { return min(a, b); }
 
-int queryI(int L,int R){//Funcao Idempotente: O(1)
-    int i = lg[R - L + 1];
-    return f(st[i][L], st[i][R - (1 << i) + 1]);
-}
-
-long long query(int L,int R){//Exemplo para soma: O(logn)
-    long long sum = 0;
-    for (int i = K; i >= 0; i--) {
-        if ((1 << i) <= R - L + 1) {
-            sum += st[i][L];
-            L += 1 << i;
-        }
+    void build(int* v, int n) {
+        copy(v, v + n, st[0]);
+        lg[1] = 0;
+        for (int i = 2; i <= n; i++)
+            lg[i] = lg[i/2] + 1;
+        for (int i = 1; i <= K; i++)
+            for (int j = 0; j + (1 << i) <= n; j++)
+                st[i][j] = f(st[i-1][j], st[i-1][j + (1 << (i-1))]);
     }
-    return sum;
-}
+
+    int queryI(int L, int R) { // Funcao Idempotente: O(1)
+        int i = lg[R - L + 1];
+        return f(st[i][L], st[i][R - (1 << i) + 1]);
+    }
+
+    long long query(int L, int R) { // Exemplo para soma: O(logn)
+        long long sum = 0;
+        for (int i = K; i >= 0; i--) {
+            if ((1 << i) <= R - L + 1) {
+                sum += st[i][L];
+                L += 1 << i;
+            }
+        }
+        return sum;
+    }
+};
 
 ```
 
@@ -1900,6 +2478,8 @@ int soma(int x,int y,int lado){
 ```cpp
 //O(mk) m=tamanho total das strings, k=tamanho do alfabeto
 // Chamar build() depois de adicionar todas as strings
+// ATENCAO: output so marca correspondencias exatas. Para detectar padroes mais curtos que sao sufixos
+// de um estado, percorrer a cadeia de links de sufixo coletando nos com output=true (dict link).
 const int K = 26;
 
 struct Vertex {
@@ -2066,6 +2646,7 @@ void conta_prefixos(string s){//Conta quantas vezes cada prefixo aparece na stri
 
 ```cpp
 
+// ATENCAO: hash simples pode ter colisoes. Para maior seguranca use dois pares (p,m) diferentes (double hash).
 const int p = 31;
 const int m = 1000000009;
 
@@ -2234,64 +2815,71 @@ struct Vertex {
         fill(begin(next), end(next), -1);
     }
 };
-vector<Vertex> trie(1);
-//Adiciona o prefixo e da update no output
-int add_string(string const& s) {
-    int v = 0;
-    for (char ch : s) {
-        int c = ch - 'a';
-        if(trie[v].eliminado) return 0;
-        if (trie[v].next[c] == -1) {
-            trie[v].next[c] = trie.size();
-            trie.emplace_back();
-        }
-        v = trie[v].next[c];
-    }
-    if(trie[v].eliminado) return 0;
-    trie[v].output++;
-    return 1;
-}
-//Conta quantos prefixos terminam dps do ponto
-int conta_out(int v){
-    int res=0;
-    if(trie[v].eliminado) return 0;
-    for(int i=0;i<K;i++){
-        if(trie[v].next[i]!=-1){
-            res+=conta_out(trie[v].next[i]);
-        }
-    }
-    res+=trie[v].output;
-    return res;
-}
-//Apaga o prefixo e conta os eliminados
-int remove_string(string const& s){
-    int v = 0;
-    for (char ch : s) {
-        int c = ch - 'a';
-        if(trie[v].eliminado) return 0;
-        if (trie[v].next[c] == -1) {
-            trie[v].next[c] = trie.size();
-            trie.emplace_back();
-        }
-        v = trie[v].next[c];
-    }
-    int res=conta_out(v);
-    trie[v].eliminado = true;
-    return res;
-}
 
+struct Trie {
+    vector<Vertex> trie{1};
 
-int main(){
-    int n,res=0;
-    cin>>n;
-    while(n--){
+    //Adiciona o prefixo e da update no output
+    int add_string(string const& s) {
+        int v = 0;
+        for (char ch : s) {
+            int c = ch - 'a';
+            if (trie[v].eliminado) return 0;
+            if (trie[v].next[c] == -1) {
+                trie[v].next[c] = trie.size();
+                trie.emplace_back();
+            }
+            v = trie[v].next[c];
+        }
+        if (trie[v].eliminado) return 0;
+        trie[v].output++;
+        return 1;
+    }
+
+    //Conta quantos prefixos terminam dps do ponto
+    int conta_out(int v) {
+        int res = 0;
+        if (trie[v].eliminado) return 0;
+        for (int i = 0; i < K; i++) {
+            if (trie[v].next[i] != -1) {
+                res += conta_out(trie[v].next[i]);
+            }
+        }
+        res += trie[v].output;
+        return res;
+    }
+
+    //Apaga o prefixo e conta os eliminados
+    // ATENCAO: cria nos novos se o caminho nao existir; evitar chamar para strings nunca inseridas
+    int remove_string(string const& s) {
+        int v = 0;
+        for (char ch : s) {
+            int c = ch - 'a';
+            if (trie[v].eliminado) return 0;
+            if (trie[v].next[c] == -1) {
+                trie[v].next[c] = trie.size();
+                trie.emplace_back();
+            }
+            v = trie[v].next[c];
+        }
+        int res = conta_out(v);
+        trie[v].eliminado = true;
+        return res;
+    }
+};
+
+int main() {
+    Trie t;
+    int n, res = 0;
+    cin >> n;
+    while (n--) {
         int tipo;
         string s;
-        cin>>tipo;
-        cin>>s;
-        if(tipo==2) res+=add_string(s);
-        else res-=remove_string(s);
-        cout<<res<<endl;
+        cin >> tipo;
+        cin >> s;
+        if (tipo == 2) res += t.add_string(s);
+        else res -= t.remove_string(s);
+        cout << res << endl;
     }
     return 0;
 }
